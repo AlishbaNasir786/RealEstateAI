@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Competitor Intelligence Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+
+    ::selection {
+      background: rgba(16, 185, 129, 0.35);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #253046;
+      border-radius: 8px;
+      border: 2px solid #090d16;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #324066;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #090d16;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.10) 0%, transparent 40%);
+      color: #f8fafc;
+    }
+
+    /* ── Top bar ────────────────────────────────────────────────── */
+    .header {
+      padding: 0.8rem 1rem;
+      background: rgba(22, 30, 46, 0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header button {
+      background: #10b981;
+      color: #042f2e;
+      border: none;
+      border-radius: 10px;
+      padding: 0.65rem 1.6rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: all .25s ease;
+    }
+
+    .header button:hover {
+      background: #34d399;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .header button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ── HTML File Upload Zone ──────────────────────────────────── */
+    .html-upload-zone {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 0.55rem 0.85rem;
+    }
+
+    .html-upload-zone label.pick-lbl {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      border-radius: 8px;
+      padding: 0.38rem 0.75rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .html-upload-zone label.pick-lbl:hover {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: rgba(56, 189, 248, 0.55);
+    }
+
+    .html-upload-zone input[type="file"] {
+      display: none;
+    }
+
+    #htmlFileName {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      max-width: 170px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #htmlCityInput {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 0.38rem 0.65rem;
+      color: #fff;
+      font-size: 0.8rem;
+      font-family: inherit;
+      width: 130px;
+    }
+
+    #htmlCityInput:focus {
+      outline: none;
+      border-color: #10b981;
+    }
+
+    #scrapeHtmlBtn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #042f2e;
+      border: none;
+      border-radius: 8px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    #scrapeHtmlBtn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    #scrapeHtmlBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #htmlScrapeResult {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.3rem 0.7rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    #htmlScrapeResult.ok {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    #htmlScrapeResult.err {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    /* ── Progress panel (hidden by default) ─────────────────────── */
+    #scrapeProgress {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.6rem 1rem;
+      background: rgba(22, 30, 46, 0.75);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+
+    #scrapeProgress.visible {
+      display: flex;
+    }
+
+    #progressText {
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    .progress-track {
+      background: rgba(255, 255, 255, 0.08);
+      height: 6px;
+      width: 60%;
+      min-width: 280px;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    #progressFill {
+      background: linear-gradient(90deg, #10b981, #38bdf8);
+      height: 100%;
+      width: 0%;
+      transition: width .4s ease;
+      border-radius: 3px;
+    }
+
+    /* ── Log area (live lines from the engine) ──────────────────── */
+    #logArea {
+      display: none;
+      max-height: 120px;
+      overflow-y: auto;
+      margin: 0 auto;
+      width: 60%;
+      min-width: 280px;
+      padding: 0.4rem 0.6rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    #logArea.visible {
+      display: block;
+    }
+
+    /* ── Report iframe & container ────────────────────────────── */
+    .report-container {
+      flex: 1;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .report-frame-wrapper {
+      flex: 1;
+      display: flex;
+      border-radius: 20px;
+      border: 3px solid rgba(16, 185, 129, 0.6);
+      box-shadow:
+        0 0 0 1px rgba(16, 185, 129, 0.2),
+        0 0 30px rgba(16, 185, 129, 0.2),
+        0 25px 60px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+      background: #090d16;
+    }
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #090d16;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Cross-page navigation (isolated inline styles so it doesn't clash with this page's own CSS) -->
+  <nav style="display:flex;justify-content:center;gap:.7rem;padding:.6rem 1rem;flex-wrap:wrap;
+              background:rgba(15,23,42,.85);backdrop-filter:blur(20px);
+              border-bottom:1px solid rgba(255,255,255,.08);font-family:'Plus Jakarta Sans','Inter',sans-serif;">
+    <a href="/persona" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🤖 Persona &amp; WhatsApp</a>
+    <a href="/competitor" style="background:#10b981;color:#042f2e;padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">📊 Competitor Engine</a>
+    <a href="/marketing_report" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">📈 Marketing Reports</a>
+    <a href="/ad_engine" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🎯 Ad Engine</a>
+    <a href="/chat_assistant" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">💬 Chat Assistant</a>
+    <a href="/brand_memory" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🧠 Brand Memory</a>
+    <a href="/" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🏠 Home (Listings)</a>
+  </nav>
+
+  <!-- Top bar -->
+  <div class="header">
+    <button id="runScrapeBtn">▶ Run Real&#8209;Time Scrape (Zameen.com)</button>
+
+    <!-- HTML File Upload Zone -->
+    <div class="html-upload-zone">
+      <label class="pick-lbl" for="htmlFileInput">📂 Choose HTML File</label>
+      <input type="file" id="htmlFileInput" accept=".html,.htm" />
+      <span id="htmlFileName">No file chosen</span>
+      <input type="text" id="htmlCityInput" placeholder="City label" value="Islamabad" />
+      <button id="scrapeHtmlBtn">⚡ Scrape HTML File</button>
+      <span id="htmlScrapeResult"></span>
+    </div>
+  </div>
+
+  <!-- Progress panel -->
+  <div id="scrapeProgress">
+    <span id="progressText">Waiting…</span>
+    <div class="progress-track">
+      <div id="progressFill"></div>
+    </div>
+  </div>
+  <pre id="logArea"></pre>
+
+  <!-- Report iframe -->
+  <div class="report-container">
+    <div class="report-frame-wrapper">
+      <iframe id="reportIframe" src="modules/data/competitor_report.html"></iframe>
+    </div>
+  </div>
+
+  <script src="/static/js/user_auth_banner.js"></script>
+  <script src="/static/js/competitor_sse.js"></script>
+  <script>
+    /* ── HTML File Scraper UI ───────────────────────────────────── */
+    const htmlFileInput = document.getElementById('htmlFileInput');
+    const htmlFileName = document.getElementById('htmlFileName');
+    const scrapeHtmlBtn = document.getElementById('scrapeHtmlBtn');
+    const htmlScrapeRes = document.getElementById('htmlScrapeResult');
+
+    htmlFileInput.addEventListener('change', () => {
+      htmlFileName.textContent = htmlFileInput.files[0]?.name || 'No file chosen';
+      htmlScrapeRes.style.display = 'none';
+    });
+
+    scrapeHtmlBtn.addEventListener('click', async () => {
+      const file = htmlFileInput.files[0];
+      if (!file) { alert('Please choose a .html file first.'); return; }
+
+      scrapeHtmlBtn.disabled = true;
+      scrapeHtmlBtn.textContent = '⏳ Scraping…';
+      htmlScrapeRes.style.display = 'none';
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('city', document.getElementById('htmlCityInput').value.trim() || 'Islamabad');
+      fd.append('save', 'true');
+
+      try {
+        const res = await fetch('/api/scrape_html_file', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          htmlScrapeRes.className = 'ok';
+          htmlScrapeRes.textContent = `✅ ${data.count} listings scraped & saved`;
+        } else {
+          htmlScrapeRes.className = 'err';
+          htmlScrapeRes.textContent = `❌ ${data.error || 'No listings found in file'}`;
+        }
+      } catch (e) {
+        htmlScrapeRes.className = 'err';
+        htmlScrapeRes.textContent = '❌ Network error';
+      }
+
+      htmlScrapeRes.style.display = 'inline-block';
+      scrapeHtmlBtn.disabled = false;
+      scrapeHtmlBtn.textContent = '⚡ Scrape HTML File';
+    });
+  </script>
+</body>
+
+</html>

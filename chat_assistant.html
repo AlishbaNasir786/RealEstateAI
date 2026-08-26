@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Marketing Chat Assistant — RealEstate AI</title>
+<meta name="description" content="Generate platform-specific post titles, descriptions, hashtags, and email content for any marketing objective.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#090d16;--surface:rgba(22,30,46,.80);--border:rgba(255,255,255,.08);
+    --primary:#10b981;--primary-glow:rgba(16,185,129,.30);--blue:#38bdf8;
+    --amber:#f59e0b;--red:#f87171;--purple:#a78bfa;--text:#f8fafc;
+    --muted:#94a3b8;--radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif;}
+  html{scroll-behavior:smooth;}
+  ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:#253046;border-radius:8px;}
+  body{
+    background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(16,185,129,.12) 0%,transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(56,189,248,.10) 0%,transparent 40%);
+  }
+  .top-nav{display:flex;justify-content:center;gap:1rem;padding:1.1rem 1rem;flex-wrap:wrap;
+    background:rgba(22,30,46,.75);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .top-nav a{background:rgba(16,185,129,.12);color:var(--primary);
+    border:1px solid rgba(16,185,129,.3);padding:.55rem 1.2rem;
+    border-radius:30px;text-decoration:none;font-weight:700;font-size:.85rem;transition:all .25s ease;}
+  .top-nav a:hover,.top-nav a.active{background:var(--primary);color:#042f2e;
+    box-shadow:0 0 18px var(--primary-glow);transform:translateY(-2px);}
+  .container{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;}
+  .page-header{text-align:center;margin-bottom:2.5rem;}
+  .badge-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.12);
+    border:1px solid rgba(16,185,129,.3);color:var(--primary);padding:5px 14px;border-radius:30px;
+    font-size:.78rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:.85rem;}
+  .page-header h1{font-size:2.4rem;font-weight:800;
+    background:linear-gradient(135deg,#fff 0%,#cbd5e1 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem;}
+  .page-header p{color:var(--muted);font-size:1rem;max-width:600px;margin:0 auto;}
+  .grid-12{display:grid;grid-template-columns:1fr 1.3fr;gap:1.5rem;}
+  @media(max-width:900px){.grid-12{grid-template-columns:1fr;}}
+  .card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);
+    border-radius:var(--radius);padding:1.75rem;box-shadow:0 14px 30px rgba(0,0,0,.3);}
+  .card-title{font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
+  .form-group{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+  .form-group label{font-size:.78rem;font-weight:600;color:var(--muted);}
+  .form-group input,.form-group textarea,.form-group select{
+    background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.1);border-radius:10px;
+    padding:.65rem .85rem;color:var(--text);font-size:.88rem;font-family:inherit;outline:none;resize:vertical;}
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus{
+    border-color:var(--primary);box-shadow:0 0 0 3px rgba(16,185,129,.12);}
+  .platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem;}
+  .plat-chip{background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.1);border-radius:12px;
+    padding:.6rem .5rem;text-align:center;cursor:pointer;font-size:.8rem;transition:all .2s;}
+  .plat-chip:hover{border-color:rgba(16,185,129,.4);}
+  .plat-chip.active{background:rgba(16,185,129,.15);border-color:var(--primary);color:var(--primary);}
+  .obj-select{width:100%;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+    padding:.7rem 1.6rem;border-radius:10px;font-weight:700;font-size:.9rem;
+    border:none;cursor:pointer;transition:all .25s;width:100%;}
+  .btn-primary{background:var(--primary);color:#042f2e;}
+  .btn-primary:hover{background:#34d399;box-shadow:0 0 20px var(--primary-glow);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+  .result-card{display:none;flex-direction:column;gap:1rem;}
+  .result-card.visible{display:flex;}
+  .result-field{background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.06);
+    border-radius:12px;padding:.9rem 1.1rem;}
+  .result-field .lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);margin-bottom:.4rem;}
+  .result-field .val{font-size:.92rem;line-height:1.55;}
+  .tag-cloud{display:flex;flex-wrap:wrap;gap:.5rem;}
+  .kw-tag{padding:.3rem .75rem;border-radius:20px;font-size:.78rem;font-weight:600;
+    background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.25);color:var(--purple);}
+  .gen-meta{font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between;margin-top:.25rem;}
+  .empty-state{color:var(--muted);font-size:.9rem;text-align:center;padding:2rem 1rem;}
+  .copy-btn{background:transparent;border:1px solid rgba(16,185,129,.3);color:var(--primary);
+    border-radius:6px;padding:.2rem .6rem;font-size:.7rem;cursor:pointer;margin-left:.5rem;}
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="/persona">🤖 Persona &amp; WhatsApp</a>
+  <a href="/competitor">📊 Competitor Engine</a>
+  <a href="/marketing_report">📈 Marketing Reports</a>
+  <a href="/ad_engine">🎯 Ad Engine</a>
+  <a href="/chat_assistant" class="active">💬 Chat Assistant</a>
+  <a href="/brand_memory">🧠 Brand Memory</a>
+  <a href="/">🏠 Home (Listings)</a>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <span class="badge-pill">✨ AI Marketing Chat Assistant</span>
+    <h1>Generate Campaign Copy Instantly</h1>
+    <p>Pick a platform and objective, describe what it's about, and get a ready-to-post title, description, hashtags, and CTA.</p>
+  </div>
+
+  <div class="grid-12">
+    <div class="card">
+      <div class="card-title">🎛️ Configure</div>
+
+      <div class="form-group">
+        <label>Platform</label>
+        <div class="platform-grid" id="platformGrid"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Objective</label>
+        <select id="objectiveSelect" class="obj-select"></select>
+      </div>
+
+      <div class="form-group">
+        <label>Topic / What is this about?</label>
+        <input type="text" id="topicInput" placeholder="e.g. 3-Bed Apartment in DHA Phase 6">
+      </div>
+
+      <div class="form-group">
+        <label>Location (optional)</label>
+        <input type="text" id="locationInput" placeholder="e.g. Karachi">
+      </div>
+
+      <div class="form-group">
+        <label>Price (optional)</label>
+        <input type="text" id="priceInput" placeholder="e.g. PKR 2.1 Crore">
+      </div>
+
+      <div class="form-group">
+        <label>Highlights (comma-separated, optional)</label>
+        <input type="text" id="highlightsInput" placeholder="e.g. Sea view, Gated community, NOC verified">
+      </div>
+
+      <button class="btn btn-primary" id="generateBtn">✨ Generate Content</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📝 Generated Content</div>
+      <div class="empty-state" id="emptyState">Fill in the details on the left and click Generate to see your campaign copy here.</div>
+
+      <div class="result-card" id="resultCard">
+        <div class="result-field">
+          <div class="lbl">Title <button class="copy-btn" data-copy="titleVal">Copy</button></div>
+          <div class="val" id="titleVal"></div>
+        </div>
+        <div class="result-field">
+          <div class="lbl">Description <button class="copy-btn" data-copy="descVal">Copy</button></div>
+          <div class="val" id="descVal"></div>
+        </div>
+        <div class="result-field" id="hashtagsWrap">
+          <div class="lbl">Hashtags</div>
+          <div class="tag-cloud" id="hashtagsVal"></div>
+        </div>
+        <div class="result-field" id="emailWrap" style="display:none;">
+          <div class="lbl">Email Subject <button class="copy-btn" data-copy="emailSubjectVal">Copy</button></div>
+          <div class="val" id="emailSubjectVal"></div>
+          <div class="lbl" style="margin-top:.75rem;">Email Body <button class="copy-btn" data-copy="emailBodyVal">Copy</button></div>
+          <div class="val" id="emailBodyVal" style="white-space:pre-wrap;"></div>
+        </div>
+        <div class="result-field">
+          <div class="lbl">Call to Action</div>
+          <div class="val" id="ctaVal"></div>
+        </div>
+        <div class="gen-meta">
+          <span id="genBy"></span>
+          <span id="genAt"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let PLATFORMS = [], OBJECTIVES = [], selectedPlatform = null;
+
+async function loadOptions(){
+  const [pRes, oRes] = await Promise.all([
+    fetch('/api/chat/platforms'), fetch('/api/chat/objectives')
+  ]);
+  const pData = await pRes.json(), oData = await oRes.json();
+  PLATFORMS = pData.platforms || [];
+  OBJECTIVES = oData.objectives || [];
+
+  const grid = document.getElementById('platformGrid');
+  grid.innerHTML = PLATFORMS.map(p =>
+    `<div class="plat-chip" data-id="${p.id}">${p.icon} ${p.label}</div>`
+  ).join('');
+  grid.querySelectorAll('.plat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      grid.querySelectorAll('.plat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selectedPlatform = chip.dataset.id;
+    });
+  });
+  if (grid.firstElementChild){
+    grid.firstElementChild.classList.add('active');
+    selectedPlatform = grid.firstElementChild.dataset.id;
+  }
+
+  const sel = document.getElementById('objectiveSelect');
+  sel.innerHTML = OBJECTIVES.map(o => `<option value="${o.id}">${o.icon} ${o.label}</option>`).join('');
+}
+
+async function generate(){
+  if (!selectedPlatform) return;
+  const objective = document.getElementById('objectiveSelect').value;
+  const topic = document.getElementById('topicInput').value.trim() || 'This Opportunity';
+  const location = document.getElementById('locationInput').value.trim();
+  const price = document.getElementById('priceInput').value.trim();
+  const highlights = document.getElementById('highlightsInput').value
+    .split(',').map(s => s.trim()).filter(Boolean);
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+
+  try{
+    const res = await fetch('/api/chat/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        platform: selectedPlatform, objective,
+        context: { topic, location, price, highlights }
+      })
+    });
+    const data = await res.json();
+    if (!data.success){ alert(data.error || 'Generation failed'); return; }
+    renderResult(data);
+  } catch(e){
+    alert('Request failed: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ Generate Content';
+  }
+}
+
+function renderResult(data){
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultCard').classList.add('visible');
+
+  document.getElementById('titleVal').textContent = data.title || '';
+  document.getElementById('descVal').textContent = data.description || '';
+  document.getElementById('ctaVal').textContent = data.cta || '';
+
+  const hwrap = document.getElementById('hashtagsWrap');
+  const htags = document.getElementById('hashtagsVal');
+  if (data.hashtags && data.hashtags.length){
+    hwrap.style.display = '';
+    htags.innerHTML = data.hashtags.map(h => `<span class="kw-tag">${h}</span>`).join('');
+  } else {
+    hwrap.style.display = 'none';
+  }
+
+  const ewrap = document.getElementById('emailWrap');
+  if (data.platform === 'email'){
+    ewrap.style.display = '';
+    document.getElementById('emailSubjectVal').textContent = data.email_subject || '';
+    document.getElementById('emailBodyVal').textContent = data.email_body || '';
+  } else {
+    ewrap.style.display = 'none';
+  }
+
+  document.getElementById('genBy').textContent =
+    'Generated by: ' + (data.generated_by === 'gemini' ? 'Gemini AI' : 'Rule Engine') +
+    (data.from_cache ? ' (cached)' : '');
+  document.getElementById('genAt').textContent =
+    data.generated_at ? new Date(data.generated_at).toLocaleString() : '';
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.matches('.copy-btn')){
+    const id = e.target.dataset.copy;
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text);
+    e.target.textContent = 'Copied!';
+    setTimeout(() => e.target.textContent = 'Copy', 1200);
+  }
+});
+
+document.getElementById('generateBtn').addEventListener('click', generate);
+loadOptions();
+</script>
+</body>
+</html>

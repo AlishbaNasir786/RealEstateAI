@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RealEstate AI — Premium Islamabad Property Intelligence</title>
+  <link rel="stylesheet" href="/static/css/luxury_theme.css" />
+  <style>
+    .top-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .top-nav a {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 0.5rem 1.1rem;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: all 0.25s ease;
+    }
+
+    .top-nav a:hover {
+      background: #10b981;
+      color: #042f2e;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <a href="/persona">🤖 Persona &amp; WhatsApp</a>
+    <a href="/competitor" data-admin-only>📊 Competitor Engine</a>
+    <a href="/marketing_report" data-admin-only>📈 Marketing Reports</a>
+    <a href="/ad_engine" data-admin-only>🎯 Ad Engine</a>
+    <a href="/chat_assistant" data-admin-only>💬 Chat Assistant</a>
+    <a href="/brand_memory" data-admin-only>🧠 Brand Memory</a>
+    <a href="/">🏠 Home (Listings)</a>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-badge">🏛️ Premier Real Estate Portal · Islamabad</div>
+    <h1 class="hero-title">Find Your Dream Property in Islamabad</h1>
+    <p class="hero-sub">AI-Powered Hyper-Personalized Listings, 100% NOC Clearance &amp; Direct Seller Intelligence</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-num">100%</div>
+        <div class="hero-lbl">Islamabad Verified</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-num">9.5%+</div>
+        <div class="hero-lbl">Avg Rental Yield</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-num">2,400+</div>
+        <div class="hero-lbl">Active Buyers</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Professional Filter Bar -->
+  <div class="filter-bar">
+    <input type="text" id="filterKeyword" placeholder="🔍 Search sector, title or keyword..."
+      oninput="applyPropertyFilters()" />
+    <select id="filterType" onchange="applyPropertyFilters()">
+      <option value="">All Property Types</option>
+      <option value="Residential Villa">Residential Villa</option>
+      <option value="Apartment / Flat">Apartment / Flat</option>
+      <option value="Residential Plot">Residential Plot</option>
+      <option value="Commercial Office">Commercial Office</option>
+    </select>
+    <select id="filterSector" onchange="applyPropertyFilters()">
+      <option value="">All Islamabad Sectors</option>
+      <!-- populated dynamically from /api/sectors -->
+    </select>
+    <select id="filterPrice" onchange="applyPropertyFilters()">
+      <option value="">Any Price Range</option>
+      <option value="100">Under 1 Crore</option>
+      <option value="300">Under 3 Crore</option>
+      <option value="500">Under 5 Crore</option>
+      <option value="500+">5+ Crore Luxury</option>
+    </select>
+    <button class="filter-btn" onclick="resetPropertyFilters()">Reset</button>
+  </div>
+
+  <div class="filter-results-count" id="filterCount">Showing <span id="visibleCount">0</span> Islamabad listings</div>
+
+  <!-- Property Showcase Grid -->
+  <section id="propertyShowcase" class="property-showcase"></section>
+
+  <script src="/static/js/home_properties.js"></script>
+  <script src="/static/js/user_auth_banner.js"></script>
+  <script>
+    // Populate sector filter dropdown from live database
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('/api/sectors');
+        const data = await res.json();
+        const sel = document.getElementById('filterSector');
+        if (sel && data.sectors && data.sectors.length) {
+          data.sectors.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            sel.appendChild(opt);
+          });
+        }
+      } catch (e) {
+        console.warn('Could not load sectors from DB:', e);
+      }
+    });
+  </script>
+</body>
+
+</html>

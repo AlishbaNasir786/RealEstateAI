@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hyper-Personalized Advertisement Engine — Real-Estate AI</title>
+  <link rel="stylesheet" href="/static/css/luxury_theme.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --accent: #38bdf8;
+      --accent-purple: #a855f7;
+      --amber: #f59e0b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── TOP NAV ─────────────────────────────────────────────── */
+    .top-nav {
+      display: flex; justify-content: center; align-items: center; gap: 0.8rem; padding: 1rem;
+      background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08); sticky: top; top: 0; z-index: 100;
+      flex-wrap: wrap;
+    }
+    .top-nav a {
+      background: rgba(255, 255, 255, 0.04); color: var(--muted); border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.55rem 1.2rem; border-radius: 30px; text-decoration: none;
+      font-weight: 600; font-size: 0.86rem; transition: all .25s ease;
+    }
+    .top-nav a:hover, .top-nav a.active {
+      background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2); transform: translateY(-1px);
+    }
+
+    .container {
+      max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 4rem;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────── */
+    .page-header {
+      text-align: center; margin-bottom: 2.5rem;
+    }
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 0.35rem 1rem; border-radius: 30px; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, #a855f7 70%, #38bdf8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.6rem;
+    }
+    .page-header p {
+      color: var(--muted); max-width: 680px; margin: 0 auto; font-size: 0.96rem;
+    }
+
+    /* ── SECTION LABELS ────────────────────────────────────── */
+    .section-label {
+      font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ── PERSONA GRID ───────────────────────────────────────── */
+    .persona-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .persona-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius);
+      padding: 1.2rem 1rem; cursor: pointer; transition: all 0.3s ease; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .persona-card:hover {
+      border-color: rgba(168, 85, 247, 0.4); transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .persona-card.active {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%);
+      border-color: #c084fc; box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+    }
+    .persona-card.active::before {
+      content: '✓ Selected'; position: absolute; top: 8px; right: 10px;
+      font-size: 0.65rem; font-weight: 700; color: #c084fc; background: rgba(168, 85, 247, 0.2);
+      padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+    .persona-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+    .persona-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.25rem; color: #fff; }
+    .persona-tagline { font-size: 0.74rem; color: var(--muted); line-height: 1.3; }
+
+    /* ── PROPERTY SELECTOR CARD ──────────────────────────────── */
+    .glass-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius);
+      padding: 1.5rem; backdrop-filter: blur(12px); margin-bottom: 2.5rem;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .card-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+
+    .form-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    .form-control {
+      background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px; padding: 0.65rem 0.9rem; color: #fff; font-size: 0.88rem;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    .form-control:focus { border-color: #c084fc; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+
+    /* ── ACTION BUTTON ───────────────────────────────────────── */
+    .generate-wrap { text-align: center; margin-bottom: 3rem; }
+    .btn-generate {
+      background: linear-gradient(135deg, #a855f7 0%, #38bdf8 100%);
+      color: #fff; font-weight: 700; font-size: 1.05rem; padding: 0.9rem 2.5rem;
+      border: none; border-radius: 35px; cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.35); display: inline-flex; align-items: center; gap: 0.6rem;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 30px rgba(168, 85, 247, 0.5);
+    }
+    .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── ADS RESULTS TABS & GRID ─────────────────────────────── */
+    .ads-output { display: none; }
+    .ads-output.visible { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .platform-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.5rem;
+    }
+
+    /* ── META CARD MOCKUP ────────────────────────────────────── */
+    .ad-card {
+      background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;
+      overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .ad-header {
+      padding: 1rem; display: flex; align-items: center; gap: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .platform-icon {
+      width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.2rem; font-weight: 700;
+    }
+    .icon-meta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
+    .icon-google { background: #ea4335; color: #fff; }
+    .icon-wa { background: #25d366; color: #fff; }
+    .icon-linkedin { background: #0a66c2; color: #fff; }
+
+    .ad-title-bar { flex: 1; }
+    .ad-brand { font-weight: 700; font-size: 0.9rem; color: #fff; display: flex; align-items: center; gap: 0.4rem; }
+    .ad-sub { font-size: 0.72rem; color: var(--muted); }
+
+    .ad-body { padding: 1.2rem; flex: 1; }
+    .ad-headline { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.6rem; color: #38bdf8; }
+    .ad-text { font-size: 0.88rem; color: #cbd5e1; white-space: pre-line; margin-bottom: 1rem; line-height: 1.6; }
+
+    .ad-visual-box {
+      background: rgba(30, 41, 59, 0.8); border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 10px; padding: 0.8rem; font-size: 0.78rem; color: #94a3b8;
+      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .ad-cta-btn {
+      background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem;
+      width: 100%; text-align: center; margin-top: 0.5rem; transition: background 0.2s ease;
+    }
+    .ad-cta-btn:hover { background: rgba(16, 185, 129, 0.3); }
+
+    .ad-footer {
+      padding: 0.75rem 1rem; background: rgba(15, 23, 42, 0.6);
+      border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; align-items: center;
+      justify-content: space-between; font-size: 0.76rem; color: var(--muted);
+    }
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.06); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.3rem 0.75rem; border-radius: 6px; font-size: 0.74rem; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-copy:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+    /* ── GOOGLE AD STYLE ─────────────────────────────────────── */
+    .google-ad-box {
+      background: #1e293b; border-radius: 12px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .google-sponsor { font-size: 0.72rem; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem; }
+    .google-url { font-size: 0.75rem; color: #38bdf8; margin-bottom: 0.4rem; }
+    .google-head { font-size: 1.05rem; font-weight: 700; color: #818cf8; margin-bottom: 0.4rem; }
+    .google-desc { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.75rem; line-height: 1.5; }
+    .google-sitelinks { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .sitelink { background: rgba(255, 255, 255, 0.04); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.76rem; color: #38bdf8; text-decoration: underline; }
+
+    /* ── WHATSAPP AD STYLE ───────────────────────────────────── */
+    .wa-bubble {
+      background: #075e54; border-radius: 14px; border-top-left-radius: 0; padding: 1rem;
+      color: #e2e8f0; font-size: 0.88rem; line-height: 1.6; border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOP NAV ────────────────────────────────────────────────── -->
+  <nav class="top-nav">
+    <a href="/persona">🤖 Persona &amp; WhatsApp</a>
+    <a href="/competitor">📊 Competitor Engine</a>
+    <a href="/marketing_report">📈 Marketing Reports</a>
+    <a href="/ad_engine" class="active">🎯 Ad Engine</a>
+    <a href="/chat_assistant">💬 Chat Assistant</a>
+    <a href="/brand_memory">🧠 Brand Memory</a>
+    <a href="/">🏠 Home (Listings)</a>
+  </nav>
+
+  <div class="container">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+    <header class="page-header">
+      <div class="badge-pill">✨ Audience-Targeted Copy Generation</div>
+      <h1>Hyper-Personalized Advertisement Engine</h1>
+      <p>Select a buyer persona to automatically generate customized, high-converting ad copy for Facebook, Instagram, Google Search, WhatsApp &amp; LinkedIn.</p>
+    </header>
+
+    <!-- ── PERSONA SELECTION GRID ───────────────────────────────── -->
+    <div class="section-label">👤 1. Select Target Buyer Persona</div>
+    <div class="persona-grid" id="personaGrid">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- ── PROPERTY SELECTOR / CUSTOM DETAILS ──────────────────── -->
+    <div class="section-label">🏠 2. Target Property Details</div>
+    <div class="glass-card">
+      <div class="card-head">
+        <div class="card-title">Select Property or Enter Custom Specs</div>
+        <select id="propertySelect" class="form-control" style="width: auto; min-width: 260px;" onchange="onPropertySelectChange()">
+          <option value="">-- Loading Properties --</option>
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Property Title</label>
+          <input type="text" id="propTitle" class="form-control" value="Luxury 1-Kanal Villa in DHA Phase 6" />
+        </div>
+        <div class="form-group">
+          <label>Location / City</label>
+          <input type="text" id="propLocation" class="form-control" value="DHA Phase 6, Lahore" />
+        </div>
+        <div class="form-group">
+          <label>Price / Terms</label>
+          <input type="text" id="propPrice" class="form-control" value="PKR 4.5 Crore" />
+        </div>
+        <div class="form-group">
+          <label>Bedrooms / Layout</label>
+          <input type="text" id="propBeds" class="form-control" value="5 Bedrooms (1 Kanal)" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GENERATE BUTTON ────────────────────────────────────── -->
+    <div class="generate-wrap">
+      <button class="btn-generate" id="generateBtn" onclick="generateCampaign()">
+        ✨ Generate Personalized Ad Campaign
+      </button>
+    </div>
+
+    <!-- ── AD RESULTS CONTAINER ────────────────────────────────── -->
+    <div class="ads-output" id="adsOutput">
+      <div class="section-label">📢 3. Multi-Platform Personalized Ad Variants</div>
+      <div class="platform-grid">
+
+        <!-- META (FB / IG) CARD -->
+        <div class="ad-card">
+          <div class="ad-header">
+            <div class="platform-icon icon-meta">meta</div>
+            <div class="ad-title-bar">
+              <div class="ad-brand">RealEstate AI <span style="color:#38bdf8;font-size:0.75rem;">✔ Sponsored</span></div>
+              <div class="ad-sub">Facebook &amp; Instagram Feed Ad</div>
+            </div>
+          </div>
+          <div class="ad-body">
+            <div class="ad-headline" id="metaHeadline">--</div>
+            <div class="ad-text" id="metaText">--</div>
+            <div class="ad-visual-box">
+              📸 <span id="metaVisual">--</span>
+            </div>
+            <div class="ad-cta-btn" id="metaCta">--</div>
+          </div>
+          <div class="ad-footer">
+            <span id="metaHook" style="color:#c084fc;font-weight:600;">--</span>
+            <button class="btn-copy" onclick="copyText('metaText')">📋 Copy Copy</button>
+          </div>
+        </div>
+
+        <!-- GOOGLE SEARCH AD CARD -->
+        <div class="ad-card">
+          <div class="ad-header">
+            <div class="platform-icon icon-google">G</div>
+            <div class="ad-title-bar">
+              <div class="ad-brand">Google Search Ad</div>
+              <div class="ad-sub">High-Intent Keyword Capture</div>
+            </div>
+          </div>
+          <div class="ad-body">
+            <div class="google-ad-box">
+              <div class="google-sponsor"><span>Sponsored</span> · realestate-ai.pk</div>
+              <div class="google-url">https://realestate-ai.pk/property/dha-villa</div>
+              <div class="google-head" id="googleHeadlines">--</div>
+              <div class="google-desc" id="googleDesc">--</div>
+              <div class="google-sitelinks" id="googleSitelinks"></div>
+            </div>
+          </div>
+          <div class="ad-footer">
+            <span>Responsive Search Ads</span>
+            <button class="btn-copy" onclick="copyText('googleDesc')">📋 Copy Copy</button>
+          </div>
+        </div>
+
+        <!-- WHATSAPP BROADCAST CARD -->
+        <div class="ad-card">
+          <div class="ad-header">
+            <div class="platform-icon icon-wa">WA</div>
+            <div class="ad-title-bar">
+              <div class="ad-brand">WhatsApp Direct Broadcast</div>
+              <div class="ad-sub">High Open-Rate Conversational Message</div>
+            </div>
+          </div>
+          <div class="ad-body">
+            <div class="wa-bubble">
+              <div class="ad-text" id="waText" style="color:#fff;margin-bottom:0;">--</div>
+            </div>
+          </div>
+          <div class="ad-footer">
+            <span id="waFormat">Emoji-Rich Direct Campaign</span>
+            <button class="btn-copy" onclick="copyText('waText')">📋 Copy Message</button>
+          </div>
+        </div>
+
+        <!-- LINKEDIN EXECUTIVE CARD -->
+        <div class="ad-card">
+          <div class="ad-header">
+            <div class="platform-icon icon-linkedin">in</div>
+            <div class="ad-title-bar">
+              <div class="ad-brand">LinkedIn Professional Showcase</div>
+              <div class="ad-sub">Corporate &amp; Investor Positioning</div>
+            </div>
+          </div>
+          <div class="ad-body">
+            <div class="ad-headline" id="linkedinHead">--</div>
+            <div class="ad-text" id="linkedinText">--</div>
+            <div class="ad-cta-btn" style="background:rgba(56,189,248,0.15);color:#38bdf8;border-color:rgba(56,189,248,0.4);" id="linkedinCta">--</div>
+          </div>
+          <div class="ad-footer">
+            <span>Executive Investor Briefing</span>
+            <button class="btn-copy" onclick="copyText('linkedinText')">📋 Copy Post</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedSegment = 'family';
+    let propertiesData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchSegments();
+      fetchProperties();
+    });
+
+    async function fetchSegments() {
+      try {
+        const res = await fetch('/api/ads/segments');
+        const data = await res.json();
+        renderSegments(data.segments || []);
+      } catch (err) {
+        console.error('Error fetching segments:', err);
+      }
+    }
+
+    function renderSegments(segments) {
+      const grid = document.getElementById('personaGrid');
+      grid.innerHTML = segments.map(s => `
+        <div class="persona-card ${s.id === selectedSegment ? 'active' : ''}" onclick="selectSegment('${s.id}')">
+          <div class="persona-icon">${s.icon}</div>
+          <div class="persona-name">${s.label}</div>
+          <div class="persona-tagline">${s.tagline}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectSegment(id) {
+      selectedSegment = id;
+      document.querySelectorAll('.persona-card').forEach(card => {
+        card.classList.toggle('active', card.getAttribute('onclick').includes(`'${id}'`));
+      });
+    }
+
+    async function fetchProperties() {
+      try {
+        const res = await fetch('/api/ads/properties');
+        const data = await res.json();
+        propertiesData = data.properties || [];
+        renderPropertySelect(propertiesData);
+      } catch (err) {
+        console.error('Error fetching properties:', err);
+      }
+    }
+
+    function renderPropertySelect(props) {
+      const select = document.getElementById('propertySelect');
+      select.innerHTML = props.map((p, idx) => `
+        <option value="${idx}">${p.title} (${p.location})</option>
+      `).join('');
+
+      if (props.length > 0) {
+        onPropertySelectChange();
+      }
+    }
+
+    function onPropertySelectChange() {
+      const select = document.getElementById('propertySelect');
+      const idx = parseInt(select.value);
+      if (!isNaN(idx) && propertiesData[idx]) {
+        const p = propertiesData[idx];
+        document.getElementById('propTitle').value = p.title || '';
+        document.getElementById('propLocation').value = p.location || '';
+        document.getElementById('propPrice').value = p.price || '';
+        document.getElementById('propBeds').value = `${p.bedrooms || 3} Bed (${p.area_sqft || '1 Kanal'})`;
+      }
+    }
+
+    async function generateCampaign() {
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Generating Hyper-Personalized Copy…';
+
+      const payload = {
+        segment: selectedSegment,
+        property: {
+          title: document.getElementById('propTitle').value,
+          location: document.getElementById('propLocation').value,
+          price: document.getElementById('propPrice').value,
+          beds: document.getElementById('propBeds').value,
+          features: ["Gated Security", "Near Top Schools", "High Rental Yield", "Prime Location"]
+        }
+      };
+
+      try {
+        const res = await fetch('/api/ads/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.status === 'success' && data.campaign) {
+          renderAdsOutput(data.campaign);
+        }
+      } catch (err) {
+        alert('Error generating ad campaign. Check console.');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '✨ Generate Personalized Ad Campaign';
+      }
+    }
+
+    function renderAdsOutput(campaign) {
+      const p = campaign.platforms;
+
+      // Meta
+      document.getElementById('metaHeadline').textContent = p.meta.headline;
+      document.getElementById('metaText').textContent = p.meta.primary_text;
+      document.getElementById('metaVisual').textContent = p.meta.visual_suggestion;
+      document.getElementById('metaCta').textContent = p.meta.cta;
+      document.getElementById('metaHook').textContent = `🎯 Hook: ${p.meta.target_hook}`;
+
+      // Google
+      document.getElementById('googleHeadlines').textContent = `${p.google.headline_1} | ${p.google.headline_2} | ${p.google.headline_3}`;
+      document.getElementById('googleDesc').textContent = `${p.google.description_1} ${p.google.description_2}`;
+      document.getElementById('googleSitelinks').innerHTML = (p.google.sitelinks || []).map(s => `
+        <div class="sitelink">${s}</div>
+      `).join('');
+
+      // WhatsApp
+      document.getElementById('waText').textContent = p.whatsapp.broadcast_message;
+      document.getElementById('waFormat').textContent = p.whatsapp.format;
+
+      // LinkedIn
+      document.getElementById('linkedinHead').textContent = p.linkedin.executive_headline;
+      document.getElementById('linkedinText').textContent = p.linkedin.post_copy;
+      document.getElementById('linkedinCta').textContent = p.linkedin.cta_label;
+
+      const out = document.getElementById('adsOutput');
+      out.classList.add('visible');
+      out.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyText(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      navigator.clipboard.writeText(el.textContent);
+      alert('📋 Copy copied to clipboard!');
+    }
+  </script>
+  <script src="/static/js/user_auth_banner.js"></script>
+</body>
+</html>

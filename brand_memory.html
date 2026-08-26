@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand Memory (RAG) — RealEstate AI</title>
+<meta name="description" content="Ask questions grounded in your brand's own documents — voice guides, policies, and company knowledge.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#090d16;--surface:rgba(22,30,46,.80);--border:rgba(255,255,255,.08);
+    --primary:#10b981;--primary-glow:rgba(16,185,129,.30);--blue:#38bdf8;
+    --purple:#a78bfa;--text:#f8fafc;--muted:#94a3b8;--radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif;}
+  ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:#253046;border-radius:8px;}
+  body{background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(167,139,250,.10) 0%,transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(56,189,248,.10) 0%,transparent 40%);}
+  .top-nav{display:flex;justify-content:center;gap:1rem;padding:1.1rem 1rem;flex-wrap:wrap;
+    background:rgba(22,30,46,.75);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .top-nav a{background:rgba(16,185,129,.12);color:var(--primary);
+    border:1px solid rgba(16,185,129,.3);padding:.55rem 1.2rem;
+    border-radius:30px;text-decoration:none;font-weight:700;font-size:.85rem;transition:all .25s ease;}
+  .top-nav a:hover,.top-nav a.active{background:var(--primary);color:#042f2e;
+    box-shadow:0 0 18px var(--primary-glow);transform:translateY(-2px);}
+  .container{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;}
+  .page-header{text-align:center;margin-bottom:2.5rem;}
+  .badge-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(167,139,250,.12);
+    border:1px solid rgba(167,139,250,.3);color:var(--purple);padding:5px 14px;border-radius:30px;
+    font-size:.78rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:.85rem;}
+  .page-header h1{font-size:2.4rem;font-weight:800;
+    background:linear-gradient(135deg,#fff 0%,#cbd5e1 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem;}
+  .page-header p{color:var(--muted);font-size:1rem;max-width:620px;margin:0 auto;}
+  .grid-12{display:grid;grid-template-columns:1.2fr 1fr;gap:1.5rem;}
+  @media(max-width:900px){.grid-12{grid-template-columns:1fr;}}
+  .card{background:var(--surface);backdrop-filter:blur(16px);border:1px solid var(--border);
+    border-radius:var(--radius);padding:1.75rem;box-shadow:0 14px 30px rgba(0,0,0,.3);margin-bottom:1.5rem;}
+  .card-title{font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;}
+  .chat-window{display:flex;flex-direction:column;gap:1rem;min-height:280px;max-height:480px;
+    overflow-y:auto;margin-bottom:1rem;padding-right:4px;}
+  .chat-msg{max-width:90%;padding:.8rem 1rem;border-radius:14px;font-size:.88rem;line-height:1.55;}
+  .chat-msg.user{align-self:flex-end;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.25);}
+  .chat-msg.bot{align-self:flex-start;background:rgba(22,30,46,.90);border:1px solid rgba(167,139,250,.25);width:100%;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+  .ans-badge-engine{font-size:.65rem;padding:.15rem .5rem;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;float:right;margin-left:.5rem;}
+  .ans-badge-engine.gemini{background:rgba(167,139,250,.2);color:var(--purple);border:1px solid rgba(167,139,250,.3);}
+  .ans-badge-engine.rule_engine{background:rgba(56,189,248,.2);color:var(--blue);border:1px solid rgba(56,189,248,.3);}
+  .ans-heading{font-size:.92rem;font-weight:700;color:var(--purple);margin-top:.75rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.35rem;border-bottom:1px solid rgba(167,139,250,.15);padding-bottom:.25rem;}
+  .ans-heading:first-child{margin-top:0;}
+  .ans-heading.main{font-size:1.05rem;color:#fff;}
+  .ans-text{font-size:.88rem;line-height:1.6;color:#e2e8f0;margin-bottom:.6rem;}
+  .ans-list{margin:.4rem 0 .8rem 1.1rem;padding:0;display:flex;flex-direction:column;gap:.35rem;}
+  .ans-item{font-size:.86rem;line-height:1.5;color:#cbd5e1;}
+  .chat-sources{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.85rem;padding-top:.6rem;border-top:1px dashed rgba(255,255,255,.1);}
+  .src-tag{font-size:.68rem;padding:.15rem .55rem;border-radius:12px;
+    background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.25);color:var(--blue);}
+  .chat-input-row{display:flex;gap:.6rem;}
+  .chat-input-row input{flex:1;background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;padding:.75rem .9rem;color:var(--text);font-size:.9rem;outline:none;}
+  .chat-input-row input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.12);}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+    padding:.7rem 1.4rem;border-radius:10px;font-weight:700;font-size:.9rem;
+    border:none;cursor:pointer;transition:all .25s;white-space:nowrap;}
+  .btn-primary{background:var(--purple);color:#1e1b2e;}
+  .btn-primary:hover{box-shadow:0 0 18px rgba(167,139,250,.35);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-outline{background:transparent;color:var(--primary);border:1px solid rgba(16,185,129,.4);width:100%;margin-top:.5rem;}
+  .btn-outline:hover{background:rgba(16,185,129,.1);}
+  .form-group{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.85rem;}
+  .form-group label{font-size:.78rem;font-weight:600;color:var(--muted);}
+  .form-group input,.form-group textarea{
+    background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.1);border-radius:10px;
+    padding:.65rem .85rem;color:var(--text);font-size:.88rem;font-family:inherit;outline:none;resize:vertical;}
+  .form-group textarea{min-height:110px;}
+  .doc-list{display:flex;flex-direction:column;gap:.6rem;max-height:340px;overflow-y:auto;}
+  .doc-row{background:rgba(15,23,42,.5);border:1px solid rgba(255,255,255,.06);
+    border-radius:10px;padding:.7rem .9rem;display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start;}
+  .doc-title{font-weight:700;font-size:.85rem;margin-bottom:.2rem;}
+  .doc-preview{font-size:.75rem;color:var(--muted);line-height:1.4;}
+  .doc-del{background:transparent;border:none;color:#f87171;cursor:pointer;font-size:.9rem;flex-shrink:0;}
+  .empty-state{color:var(--muted);font-size:.85rem;text-align:center;padding:1.5rem;}
+  .add-tabs{display:flex;gap:.5rem;margin-bottom:1.1rem;}
+  .add-tab{flex:1;background:rgba(15,23,42,.5);border:1px solid rgba(255,255,255,.08);
+    color:var(--muted);border-radius:10px;padding:.55rem;font-size:.8rem;font-weight:700;
+    cursor:pointer;transition:all .2s;}
+  .add-tab.active{background:rgba(167,139,250,.15);border-color:var(--purple);color:var(--purple);}
+  .doc-badges{display:flex;gap:.4rem;margin-top:.35rem;}
+  .doc-badge{font-size:.65rem;padding:.1rem .5rem;border-radius:10px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.4px;}
+  .doc-badge.pdf{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--red, #f87171);}
+  .doc-badge.text{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);color:var(--blue);}
+  .doc-badge.chunks{background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.3);color:var(--muted);}
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="/persona">🤖 Persona &amp; WhatsApp</a>
+  <a href="/competitor">📊 Competitor Engine</a>
+  <a href="/marketing_report">📈 Marketing Reports</a>
+  <a href="/ad_engine">🎯 Ad Engine</a>
+  <a href="/chat_assistant">💬 Chat Assistant</a>
+  <a href="/brand_memory" class="active">🧠 Brand Memory</a>
+  <a href="/">🏠 Home (Listings)</a>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <span class="badge-pill">🧠 Brand Memory · RAG</span>
+    <h1>Ask Your Brand Knowledge Base</h1>
+    <p>Retrieval-augmented answers grounded in your own brand documents — voice guides, policies, company facts — so every answer stays on-brand.</p>
+  </div>
+
+  <div class="grid-12">
+    <div class="card">
+      <div class="card-title">💬 Ask a Question</div>
+      <div class="chat-window" id="chatWindow">
+        <div class="empty-state">Ask something like "What tone should our ads use?" or "Can we guarantee rental returns?"</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="questionInput" placeholder="Ask about brand voice, policies, or company facts…">
+        <button class="btn btn-primary" id="askBtn">Ask</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">📚 Knowledge Base</div>
+        <div class="doc-list" id="docList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">➕ Add Document</div>
+        <div class="add-tabs" id="addTabs">
+          <button type="button" class="add-tab active" data-mode="text">📝 Paste Text</button>
+          <button type="button" class="add-tab" data-mode="pdf">📄 Upload PDF</button>
+        </div>
+
+        <div id="textModeFields">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="docTitle" placeholder="e.g. Q3 Promotions Policy">
+          </div>
+          <div class="form-group">
+            <label>Content</label>
+            <textarea id="docContent" placeholder="Paste the document text here…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tags (optional, comma-separated)</label>
+            <input type="text" id="docTags" placeholder="e.g. policy, promotions">
+          </div>
+          <button class="btn btn-outline" id="addDocBtn">Add to Knowledge Base</button>
+        </div>
+
+        <div id="pdfModeFields" style="display:none;">
+          <div class="form-group">
+            <label>PDF File (max 15MB)</label>
+            <input type="file" id="pdfFile" accept="application/pdf">
+          </div>
+          <div class="form-group">
+            <label>Title (optional — defaults to filename)</label>
+            <input type="text" id="pdfTitle" placeholder="e.g. Franchise Agreement Template">
+          </div>
+          <div class="form-group">
+            <label>Tags (optional, comma-separated)</label>
+            <input type="text" id="pdfTags" placeholder="e.g. legal, contract">
+          </div>
+          <button class="btn btn-outline" id="addPdfBtn">Extract, Chunk &amp; Index PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadDocs(){
+  const res = await fetch('/api/brand/documents');
+  const data = await res.json();
+  const list = document.getElementById('docList');
+  const docs = data.documents || [];
+  if (!docs.length){
+    list.innerHTML = '<div class="empty-state">No documents yet.</div>';
+    return;
+  }
+  list.innerHTML = docs.map(d => `
+    <div class="doc-row" data-id="${d.id}">
+      <div>
+        <div class="doc-title">${escapeHtml(d.title)}</div>
+        <div class="doc-preview">${escapeHtml(d.preview)}</div>
+        <div class="doc-badges">
+          <span class="doc-badge ${d.source_type === 'pdf' ? 'pdf' : 'text'}">${d.source_type === 'pdf' ? '📄 PDF' : '📝 Text'}</span>
+          <span class="doc-badge chunks">${d.chunk_count} chunk${d.chunk_count === 1 ? '' : 's'}</span>
+        </div>
+      </div>
+      <button class="doc-del" data-id="${d.id}" title="Delete">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s || '';
+  return div.innerHTML;
+}
+
+function formatMarkdown(text){
+  if (!text) return '';
+  let html = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^###\s+(.*$)/gim, '<div class="ans-heading">$1</div>')
+    .replace(/^##\s+(.*$)/gim, '<div class="ans-heading main">$1</div>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^\s*[\-\*]\s+(.*$)/gim, '<li class="ans-item">$1</li>');
+
+  html = html.replace(/(<li class="ans-item">.*?<\/li>\s*)+/gs, function(match){
+    return '<ul class="ans-list">' + match + '</ul>';
+  });
+
+  const blocks = html.split(/\n\n+/);
+  html = blocks.map(b => {
+    b = b.trim();
+    if (!b) return '';
+    if (b.startsWith('<div class="ans-heading"') || b.startsWith('<ul class="ans-list"')) {
+      return b;
+    }
+    return '<p class="ans-text">' + b.replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+
+  return html;
+}
+
+async function ask(){
+  const input = document.getElementById('questionInput');
+  const question = input.value.trim();
+  if (!question) return;
+
+  const win = document.getElementById('chatWindow');
+  const empty = win.querySelector('.empty-state');
+  if (empty) empty.remove();
+
+  win.insertAdjacentHTML('beforeend', `<div class="chat-msg user">${escapeHtml(question)}</div>`);
+  win.scrollTop = win.scrollHeight;
+  input.value = '';
+
+  const btn = document.getElementById('askBtn');
+  btn.disabled = true; btn.textContent = '…';
+
+  try{
+    const res = await fetch('/api/brand/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question })
+    });
+    const data = await res.json();
+    const sources = (data.sources || []).map(s => `<span class="src-tag">📄 ${escapeHtml(s.title)}</span>`).join('');
+    const engineLabel = data.generated_by === 'gemini' ? '✨ Gemini AI' : '⚡ Rule Engine';
+    const engineClass = data.generated_by === 'gemini' ? 'gemini' : 'rule_engine';
+
+    const formattedBody = formatMarkdown(data.answer || 'No answer generated.');
+
+    win.insertAdjacentHTML('beforeend', `
+      <div class="chat-msg bot">
+        <span class="ans-badge-engine ${engineClass}">${engineLabel}</span>
+        ${formattedBody}
+        ${sources ? `<div class="chat-sources">${sources}</div>` : ''}
+      </div>
+    `);
+  } catch(e){
+    win.insertAdjacentHTML('beforeend', `<div class="chat-msg bot">Something went wrong: ${escapeHtml(e.message)}</div>`);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Ask';
+    win.scrollTop = win.scrollHeight;
+  }
+}
+
+async function addDoc(){
+  const title = document.getElementById('docTitle').value.trim();
+  const content = document.getElementById('docContent').value.trim();
+  const tags = document.getElementById('docTags').value.trim();
+  if (!title || !content){ alert('Title and content are required.'); return; }
+
+  const res = await fetch('/api/brand/documents', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ title, content, tags })
+  });
+  const data = await res.json();
+  if (!data.success){ alert(data.error || 'Failed to add document'); return; }
+
+  document.getElementById('docTitle').value = '';
+  document.getElementById('docContent').value = '';
+  document.getElementById('docTags').value = '';
+  loadDocs();
+}
+
+document.getElementById('addTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.add-tab');
+  if (!btn) return;
+  document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const mode = btn.dataset.mode;
+  document.getElementById('textModeFields').style.display = mode === 'text' ? '' : 'none';
+  document.getElementById('pdfModeFields').style.display = mode === 'pdf' ? '' : 'none';
+});
+
+async function addPdf(){
+  const fileInput = document.getElementById('pdfFile');
+  const file = fileInput.files[0];
+  if (!file){ alert('Choose a PDF file first.'); return; }
+
+  const title = document.getElementById('pdfTitle').value.trim();
+  const tags = document.getElementById('pdfTags').value.trim();
+
+  const formData = new FormData();
+  formData.append('file', file);
+  if (title) formData.append('title', title);
+  if (tags) formData.append('tags', tags);
+
+  const btn = document.getElementById('addPdfBtn');
+  btn.disabled = true; btn.textContent = '⏳ Extracting & embedding…';
+
+  try{
+    const res = await fetch('/api/brand/documents/pdf', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!data.success){ alert(data.error || 'Failed to process PDF'); return; }
+
+    fileInput.value = '';
+    document.getElementById('pdfTitle').value = '';
+    document.getElementById('pdfTags').value = '';
+    loadDocs();
+  } catch(e){
+    alert('Upload failed: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Extract, Chunk & Index PDF';
+  }
+}
+
+document.getElementById('askBtn').addEventListener('click', ask);
+document.getElementById('questionInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') ask();
+});
+document.getElementById('addDocBtn').addEventListener('click', addDoc);
+document.getElementById('addPdfBtn').addEventListener('click', addPdf);
+document.getElementById('docList').addEventListener('click', async (e) => {
+  if (e.target.matches('.doc-del')){
+    const id = e.target.dataset.id;
+    if (!confirm('Delete this document?')) return;
+    await fetch(`/api/brand/documents/${id}`, { method:'DELETE' });
+    loadDocs();
+  }
+});
+
+loadDocs();
+</script>
+</body>
+</html>

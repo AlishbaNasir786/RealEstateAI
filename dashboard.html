@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real‑Estate AI Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(22, 30, 46, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.3);
+      --secondary: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:'Plus Jakarta Sans',sans-serif; }
+    ::selection { background:rgba(16,185,129,0.35); color:#fff; }
+    ::-webkit-scrollbar       { width:10px; }
+    ::-webkit-scrollbar-track  { background:var(--bg-dark); }
+    ::-webkit-scrollbar-thumb  { background:#253046; border-radius:8px; border:2px solid var(--bg-dark); }
+
+    body {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:100vh;
+      background-color:var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(16,185,129,0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(56,189,248,0.10) 0%, transparent 40%);
+      color:var(--text-main);
+      padding:2rem 1rem;
+      gap:1.5rem;
+    }
+
+    h1 {
+      font-size:2.2rem; font-weight:800;
+      background:linear-gradient(135deg,#ffffff 0%,#cbd5e1 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      margin-bottom:0.5rem;
+    }
+
+    .nav-card {
+      padding:1.5rem 2rem; width:100%; max-width:480px;
+      background:var(--card-bg); backdrop-filter:blur(16px);
+      border:1px solid var(--card-border); border-radius:16px;
+      box-shadow:0 14px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+      transition:transform .3s cubic-bezier(0.16,1,0.3,1), border-color .3s ease, box-shadow .3s ease;
+    }
+    .nav-card:hover {
+      transform:translateY(-4px);
+      border-color:rgba(16,185,129,0.35);
+      box-shadow:0 18px 36px rgba(0,0,0,0.4), 0 0 0 1px rgba(16,185,129,0.12);
+    }
+    a {
+      color:var(--primary); text-decoration:none;
+      font-size:1.15rem; font-weight:700;
+      transition:color .2s ease;
+    }
+    a:hover { color:#34d399; }
+  </style>
+</head>
+<body>
+  <h1>Real‑Estate AI – All Modules</h1>
+  <div class="nav-card"><a href="/">🏠 Property Listings (Home)</a></div>
+  <div class="nav-card"><a href="/competitor">📊 Competitor Intelligence Engine</a></div>
+  <div class="nav-card"><a href="/persona_app.html">🤖 Persona &amp; WhatsApp Engine</a></div>
+  <div class="nav-card"><a href="/competitor">📈 Marketing Reports (Admin)</a></div>
+  <div class="nav-card"><a href="/">🎯 Hyper‑Ad Engine (embedded in home)</a></div>
+</body>
+</html>

@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Report — AI-Powered Insights & Reviews</title>
+  <meta name="description"
+    content="AI-powered marketing performance report combining customer reviews and website analysis to find weak points and suggest improvements.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════
+       DESIGN TOKENS
+    ══════════════════════════════════════════════════ */
+    :root {
+      --bg: #090d16;
+      --surface: rgba(22, 30, 46, 0.80);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.30);
+      --blue: #38bdf8;
+      --amber: #f59e0b;
+      --red: #f87171;
+      --purple: #a78bfa;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    ::selection {
+      background: var(--primary-glow);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #253046;
+      border-radius: 8px;
+    }
+
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(16, 185, 129, .12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(56, 189, 248, .10) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(167, 139, 250, .05) 0%, transparent 60%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOP NAV ─────────────────────────────────────── */
+    .top-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.1rem 1rem;
+      background: rgba(22, 30, 46, .75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .top-nav a {
+      background: rgba(16, 185, 129, .12);
+      color: var(--primary);
+      border: 1px solid rgba(16, 185, 129, .3);
+      padding: .55rem 1.2rem;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .85rem;
+      transition: all .25s ease;
+    }
+
+    .top-nav a:hover,
+    .top-nav a.active {
+      background: var(--primary);
+      color: #042f2e;
+      box-shadow: 0 0 18px var(--primary-glow);
+      transform: translateY(-2px);
+    }
+
+    /* ── LAYOUT ──────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    /* ── PAGE HEADER ─────────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: dropIn .6s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    @keyframes dropIn {
+      from {
+        opacity: 0;
+        transform: translateY(-14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, .12);
+      border: 1px solid rgba(16, 185, 129, .3);
+      color: var(--primary);
+      padding: 5px 14px;
+      border-radius: 30px;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      margin-bottom: .85rem;
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, .28);
+      }
+
+      70% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
+    .page-header h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .5rem;
+      letter-spacing: -.5px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ── CARDS ───────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .3);
+      transition: border-color .25s;
+    }
+
+    .card:hover {
+      border-color: rgba(16, 185, 129, .2);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── GRID LAYOUTS ────────────────────────────────── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-12 {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 1.5rem;
+    }
+
+    @media(max-width:900px) {
+
+      .grid-3,
+      .grid-2,
+      .grid-12 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── HEALTH RING ─────────────────────────────────── */
+    .rings-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .ring-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, .06);
+      stroke-width: 8;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 251.2;
+      transition: stroke-dashoffset 1.2s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .ring-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .ring-label .val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .ring-label .sub {
+      font-size: .6rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .ring-name {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── STARS ───────────────────────────────────────── */
+    .stars {
+      color: #f59e0b;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+    }
+
+    .star-empty {
+      color: rgba(255, 255, 255, .15);
+    }
+
+    /* ── RATING BAR ──────────────────────────────────── */
+    .rating-bar-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin: .3rem 0;
+    }
+
+    .rating-bar-row .lbl {
+      font-size: .78rem;
+      color: var(--muted);
+      width: 40px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, .07);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--primary), #34d399);
+      transition: width 1s ease;
+    }
+
+    .rating-bar-row .cnt {
+      font-size: .78rem;
+      color: var(--muted);
+      width: 28px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── REVIEW CARDS ────────────────────────────────── */
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .review-card {
+      background: rgba(15, 23, 42, .6);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      animation: slideUp .4s ease both;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: .5rem;
+    }
+
+    .reviewer-name {
+      font-weight: 700;
+      font-size: .9rem;
+    }
+
+    .review-date {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .review-comment {
+      font-size: .85rem;
+      color: rgba(248, 250, 252, .75);
+      line-height: 1.55;
+    }
+
+    .sentiment-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: .68rem;
+      font-weight: 700;
+      margin-top: .5rem;
+    }
+
+    .sent-pos {
+      background: rgba(16, 185, 129, .18);
+      color: #34d399;
+    }
+
+    .sent-neg {
+      background: rgba(248, 113, 113, .18);
+      color: #fca5a5;
+    }
+
+    .sent-neu {
+      background: rgba(148, 163, 184, .12);
+      color: var(--muted);
+    }
+
+    /* ── REVIEW FORM ─────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media(max-width:600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    .form-group label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: rgba(15, 23, 42, .7);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 10px;
+      padding: .65rem .85rem;
+      color: var(--text);
+      font-size: .88rem;
+      font-family: inherit;
+      transition: border-color .2s;
+      outline: none;
+      resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, .12);
+    }
+
+    .form-group textarea {
+      min-height: 90px;
+    }
+
+    .star-picker {
+      display: flex;
+      gap: .35rem;
+      cursor: pointer;
+    }
+
+    .star-picker .sp {
+      font-size: 1.6rem;
+      color: rgba(255, 255, 255, .15);
+      transition: color .15s;
+      user-select: none;
+    }
+
+    .star-picker .sp.active,
+    .star-picker .sp:hover,
+    .star-picker .sp.hover {
+      color: #f59e0b;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+      padding: .7rem 1.6rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: .9rem;
+      border: none;
+      cursor: pointer;
+      transition: all .25s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #042f2e;
+    }
+
+    .btn-primary:hover {
+      background: #34d399;
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid rgba(16, 185, 129, .4);
+    }
+
+    .btn-outline:hover {
+      background: rgba(16, 185, 129, .1);
+    }
+
+    .form-msg {
+      font-size: .82rem;
+      padding: .5rem .8rem;
+      border-radius: 8px;
+      margin-top: .5rem;
+      display: none;
+    }
+
+    .form-msg.ok {
+      background: rgba(16, 185, 129, .15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, .3);
+    }
+
+    .form-msg.err {
+      background: rgba(248, 113, 113, .15);
+      color: #fca5a5;
+      border: 1px solid rgba(248, 113, 113, .3);
+    }
+
+    /* ── ISSUES LIST ─────────────────────────────────── */
+    .issues-list {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .issue-row {
+      display: flex;
+      gap: .85rem;
+      align-items: flex-start;
+      background: rgba(15, 23, 42, .5);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 12px;
+      padding: .9rem 1rem;
+    }
+
+    .sev-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .sev-high {
+      background: #f87171;
+      box-shadow: 0 0 6px rgba(248, 113, 113, .5);
+    }
+
+    .sev-medium {
+      background: var(--amber);
+      box-shadow: 0 0 6px rgba(245, 158, 11, .4);
+    }
+
+    .sev-low {
+      background: var(--blue);
+      box-shadow: 0 0 6px rgba(56, 189, 248, .4);
+    }
+
+    .issue-body {
+      flex: 1;
+    }
+
+    .issue-cat {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .issue-title {
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: .3rem;
+    }
+
+    .issue-detail {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: .4rem;
+    }
+
+    .issue-action {
+      font-size: .78rem;
+      padding: .3rem .7rem;
+      background: rgba(16, 185, 129, .1);
+      border: 1px solid rgba(16, 185, 129, .2);
+      border-radius: 6px;
+      color: #34d399;
+      display: inline-block;
+    }
+
+    /* ── RECOMMENDATIONS ─────────────────────────────── */
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+    }
+
+    .rec-row {
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      background: rgba(56, 189, 248, .06);
+      border: 1px solid rgba(56, 189, 248, .12);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+
+    .rec-num {
+      font-size: .72rem;
+      font-weight: 800;
+      color: var(--blue);
+      background: rgba(56, 189, 248, .15);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── STRENGTHS ───────────────────────────────────── */
+    .strength-list {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+
+    .strength-row {
+      display: flex;
+      align-items: flex-start;
+      gap: .7rem;
+      font-size: .88rem;
+      color: rgba(248, 250, 252, .8);
+    }
+
+    .strength-row .tick {
+      color: var(--primary);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── KEYWORD TAGS ────────────────────────────────── */
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .kw-tag {
+      padding: .3rem .75rem;
+      border-radius: 20px;
+      font-size: .78rem;
+      font-weight: 600;
+      background: rgba(167, 139, 250, .12);
+      border: 1px solid rgba(167, 139, 250, .25);
+      color: var(--purple);
+    }
+
+    /* ── SCAN TABLE ──────────────────────────────────── */
+    .scan-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+
+    .scan-table th {
+      text-align: left;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+    }
+
+    .scan-table td {
+      padding: .6rem .75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, .04);
+    }
+
+    .scan-table tr:hover td {
+      background: rgba(255, 255, 255, .02);
+    }
+
+    .ok-chip {
+      color: #34d399;
+      font-size: .75rem;
+    }
+
+    .warn-chip {
+      color: var(--amber);
+      font-size: .75rem;
+    }
+
+    .err-chip {
+      color: #f87171;
+      font-size: .75rem;
+    }
+
+    /* ── RUN REPORT PANEL ────────────────────────────── */
+    .run-panel {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(16, 185, 129, .06);
+      border: 1px solid rgba(16, 185, 129, .18);
+      border-radius: var(--radius);
+      margin-bottom: 2rem;
+    }
+
+    .run-panel h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+
+    .run-panel p {
+      color: var(--muted);
+      font-size: .88rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .progress-wrap {
+      display: none;
+      flex-direction: column;
+      gap: .5rem;
+      margin-top: 1rem;
+    }
+
+    .progress-wrap.visible {
+      display: flex;
+    }
+
+    .prog-track {
+      background: rgba(255, 255, 255, .07);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .prog-fill {
+      background: linear-gradient(90deg, var(--primary), var(--blue));
+      height: 100%;
+      width: 0%;
+      transition: width .5s ease;
+      border-radius: 3px;
+    }
+
+    .prog-text {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .log-area {
+      display: none;
+      max-height: 120px;
+      overflow-y: auto;
+      background: rgba(15, 23, 42, .9);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 8px;
+      padding: .6rem;
+      font-family: monospace;
+      font-size: .72rem;
+      color: #64748b;
+      line-height: 1.6;
+      text-align: left;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .log-area.visible {
+      display: block;
+    }
+
+    /* ── SECTION DIVIDER ─────────────────────────────── */
+    .section-gap {
+      margin-top: 2.5rem;
+    }
+
+    .section-label {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, .07);
+    }
+
+    /* ── SKELETON LOADER ─────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255, 255, 255, .04) 25%, rgba(255, 255, 255, .08) 50%, rgba(255, 255, 255, .04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .sk-line {
+      height: 12px;
+      border-radius: 6px;
+      margin: .5rem 0;
+    }
+
+    .sk-ring {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── TOP NAV ──────────────────────────────────────────────────── -->
+  <nav class="top-nav">
+    <a href="/persona">🤖 Persona &amp; WhatsApp</a>
+    <a href="/competitor">📊 Competitor Engine</a>
+    <a href="/marketing_report" class="active">📈 Marketing Reports</a>
+    <a href="/chat_assistant">💬 Chat Assistant</a>
+    <a href="/brand_memory">🧠 Brand Memory</a>
+    <a href="/">🏠 Home (Listings)</a>
+  </nav>
+
+  <div class="container">
+
+    <!-- ── PAGE HEADER ────────────────────────────────────────────── -->
+    <header class="page-header">
+      <div class="badge-pill">📈 AI Marketing Intelligence</div>
+      <h1>Marketing Performance Report</h1>
+      <p>Real-time analysis combining customer reviews &amp; site-scan data — AI finds weak points and suggests concrete
+        improvements.</p>
+    </header>
+
+    <!-- ── RUN REPORT PANEL ───────────────────────────────────────── -->
+    <div class="run-panel" id="runPanel">
+      <h2>🚀 Generate Full AI Report</h2>
+      <p>Runs the complete pipeline: fetches reviews → scans every page → correlates signals → generates AI insights.
+      </p>
+      <button class="btn btn-primary" id="runReportBtn" onclick="startReport()">
+        ▶ Run Analysis Now
+      </button>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="prog-track">
+          <div class="prog-fill" id="progFill"></div>
+        </div>
+        <div class="prog-text" id="progText">Connecting…</div>
+        <div class="log-area" id="logArea"></div>
+      </div>
+    </div>
+
+    <!-- ── HEALTH SCORE RINGS (loaded on page open) ───────────────── -->
+    <div class="section-label">📊 Platform Health Score</div>
+    <div class="rings-row" id="ringsRow">
+      <!-- Skeleton until report runs -->
+      <div class="ring-item">
+        <div class="ring-wrap skeleton sk-ring"></div>
+        <div class="ring-name">Overall</div>
+      </div>
+      <div class="ring-item">
+        <div class="ring-wrap skeleton sk-ring"></div>
+        <div class="ring-name">Reviews</div>
+      </div>
+      <div class="ring-item">
+        <div class="ring-wrap skeleton sk-ring"></div>
+        <div class="ring-name">SEO</div>
+      </div>
+      <div class="ring-item">
+        <div class="ring-wrap skeleton sk-ring"></div>
+        <div class="ring-name">Performance</div>
+      </div>
+      <div class="ring-item">
+        <div class="ring-wrap skeleton sk-ring"></div>
+        <div class="ring-name">Content</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         TOP ROW: REVIEW STATS  +  SUBMIT REVIEW FORM
+    ══════════════════════════════════════════════════════════ -->
+    <div class="section-gap"></div>
+    <div class="section-label">⭐ Customer Reviews</div>
+
+    <div class="grid-12">
+
+      <!-- Review Stats card -->
+      <div class="card" id="reviewStatsCard">
+        <div class="card-title">
+          <div class="icon" style="background:rgba(245,158,11,.15);">⭐</div>
+          Rating Overview
+        </div>
+        <div id="reviewStatsBody">
+          <div class="sk-line skeleton" style="width:60%;height:40px;border-radius:10px;"></div>
+          <div class="sk-line skeleton" style="width:80%;"></div>
+          <div class="sk-line skeleton" style="width:70%;"></div>
+          <div class="sk-line skeleton" style="width:75%;"></div>
+          <div class="sk-line skeleton" style="width:65%;"></div>
+          <div class="sk-line skeleton" style="width:70%;"></div>
+        </div>
+      </div>
+
+      <!-- Submit Review form -->
+      <div class="card">
+        <div class="card-title">
+          <div class="icon" style="background:rgba(16,185,129,.15);">✍️</div>
+          Submit a Review
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Your Name *</label>
+            <input type="text" id="fName" placeholder="e.g. Ahsan Tariq" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>Rating *</label>
+            <div class="star-picker" id="starPicker">
+              <span class="sp" data-val="1">★</span>
+              <span class="sp" data-val="2">★</span>
+              <span class="sp" data-val="3">★</span>
+              <span class="sp" data-val="4">★</span>
+              <span class="sp" data-val="5">★</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:.8rem;">
+          <label>Your Review *</label>
+          <textarea id="fComment" placeholder="Tell us about your experience with our platform, agents, or properties…"
+            maxlength="2000"></textarea>
+        </div>
+
+        <div style="margin-top:1rem;display:flex;gap:.75rem;align-items:center;">
+          <button class="btn btn-primary" id="submitReviewBtn" onclick="submitReview()">
+            ✅ Submit Review
+          </button>
+          <span style="font-size:.78rem;color:var(--muted);">Reviews appear instantly on the platform.</span>
+        </div>
+        <div class="form-msg" id="formMsg"></div>
+      </div>
+    </div>
+
+    <!-- ── RECENT REVIEWS LIST ────────────────────────────────────── -->
+    <div class="section-gap"></div>
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:rgba(167,139,250,.15);">💬</div>
+        Recent Customer Reviews
+        <span id="reviewCount" style="font-size:.78rem;color:var(--muted);font-weight:500;margin-left:auto;"></span>
+      </div>
+      <div class="reviews-list" id="reviewsList">
+        <div class="sk-line skeleton" style="height:80px;border-radius:12px;"></div>
+        <div class="sk-line skeleton" style="height:80px;border-radius:12px;"></div>
+        <div class="sk-line skeleton" style="height:80px;border-radius:12px;"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AI INSIGHTS SECTION (populated after report runs)
+    ══════════════════════════════════════════════════════════ -->
+    <!-- ── AI RECOMMENDATIONS & WEAK POINTS (Based on Reviews, Stars & Likes) ── -->
+    <div class="section-gap"></div>
+    <div class="section-label">🤖 AI Recommendations &amp; Weak Points (Reviews, Stars &amp; Likes Analysis)</div>
+
+    <div class="grid-2">
+      <!-- Weak Points Card -->
+      <div class="card">
+        <div class="card-title">
+          <div class="icon" style="background:rgba(248,113,113,.15);">⚠️</div>
+          Weak Points Detected
+          <span id="wpCount" style="font-size:.78rem;color:var(--muted);margin-left:auto;"></span>
+        </div>
+        <div class="issues-list" id="weakPointsList">
+          <div class="sk-line skeleton" style="height:50px;"></div>
+        </div>
+      </div>
+
+      <!-- Recommendations Card -->
+      <div class="card">
+        <div class="card-title">
+          <div class="icon" style="background:rgba(56,189,248,.15);">💡</div>
+          AI Recommendations &amp; Strengths
+        </div>
+        <div class="rec-list" id="recList">
+          <div class="sk-line skeleton" style="height:50px;"></div>
+        </div>
+
+        <div style="margin-top:1.2rem;">
+          <div class="card-title" style="margin-bottom:.5rem;font-size:.85rem;">
+            <div class="icon" style="background:rgba(16,185,129,.15);">✅</div>
+            Platform Strengths
+          </div>
+          <div class="strength-list" id="strengthList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LISTING ENGAGEMENT RESULTS ────────────────────────── -->
+    <div class="section-gap"></div>
+    <div class="section-label">❤️ Listing Engagement (Likes & Property Reviews)</div>
+    <div class="card">
+      <div class="card-title">
+        <div class="icon" style="background:rgba(239,68,68,.15);">💖</div>
+        Property Listing Engagement Overview
+      </div>
+      <div class="grid-2" style="margin-top:1rem;" id="engagementBody">
+        <div class="sk-line skeleton" style="height:60px;"></div>
+        <div class="sk-line skeleton" style="height:60px;"></div>
+      </div>
+    </div>
+
+
+    <div style="height:3rem;"></div>
+  </div><!-- /container -->
+
+  <!-- ════════════════════════════════════════════════════
+       JAVASCRIPT
+  ════════════════════════════════════════════════════ -->
+  <script>
+    // ── State ──────────────────────────────────────────────────────────
+    let _selectedRating = 0;
+    let _reportData = null;
+
+    // ── On load: fetch reviews + health scores immediately ─────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      loadReviews();
+      loadHealth();
+      initStarPicker();
+    });
+
+    // ── Health scores (fast) ───────────────────────────────────────────
+    async function loadHealth() {
+      try {
+        const res = await fetch('/api/marketing/health');
+        const data = await res.json();
+        renderReviewStats(data);
+        if (data.insights) {
+          renderInsights(data);
+        }
+        if (data.engagement) {
+          renderEngagement(data.engagement);
+        }
+      } catch (e) {
+        console.warn('Health load failed:', e);
+      }
+    }
+
+    // ── Load all reviews ───────────────────────────────────────────────
+    async function loadReviews() {
+      try {
+        const res = await fetch('/api/reviews');
+        const data = await res.json();
+        renderReviewStats(data.stats || {});
+        renderReviewsList(data.reviews || []);
+      } catch (e) {
+        console.error('Reviews load failed:', e);
+      }
+    }
+
+    // ── Render review stats sidebar ────────────────────────────────────
+    function renderReviewStats(stats) {
+      const total = stats.total || 0;
+      const avg = parseFloat(stats.avg_rating || 0).toFixed(1);
+      const dist = stats.distribution || {};
+
+      document.getElementById('reviewCount').textContent =
+        total ? `${total} review${total !== 1 ? 's' : ''}` : 'No reviews yet';
+
+      const html = `
+      <div style="display:flex;align-items:baseline;gap:.75rem;margin-bottom:1rem;">
+        <span style="font-size:2.8rem;font-weight:800;color:var(--amber);">${avg}</span>
+        <div>
+          <div class="stars">${renderStars(parseFloat(avg))}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${total} reviews</div>
+        </div>
+      </div>
+      ${[5, 4, 3, 2, 1].map(s => {
+        const count = dist[String(s)] || 0;
+        const pct = total ? Math.round(count / total * 100) : 0;
+        return `<div class="rating-bar-row">
+          <span class="lbl">${s}★</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <span class="cnt">${count}</span>
+        </div>`;
+      }).join('')}
+    `;
+      document.getElementById('reviewStatsBody').innerHTML = html;
+    }
+
+    function renderStars(avg) {
+      return [1, 2, 3, 4, 5].map(i => {
+        if (avg >= i) return '★';
+        if (avg >= i - .5) return '½';
+        return '<span class="star-empty">★</span>';
+      }).join('');
+    }
+
+    // ── Render reviews list ────────────────────────────────────────────
+    function renderReviewsList(reviews) {
+      const el = document.getElementById('reviewsList');
+      if (!reviews.length) {
+        el.innerHTML = `<div style="text-align:center;color:var(--muted);padding:2rem;font-size:.88rem;">
+        No reviews yet — be the first to leave one! 👆
+      </div>`;
+        return;
+      }
+
+      el.innerHTML = reviews.slice(0, 20).map((r, i) => {
+        const stars = renderStars(r.rating || 0);
+        const sent = r.sentiment;
+        const sentCls = sent > 0.1 ? 'sent-pos' : sent < -0.1 ? 'sent-neg' : 'sent-neu';
+        const sentTxt = sent > 0.1 ? '😊 Positive' : sent < -0.1 ? '😞 Negative' : '😐 Neutral';
+        const date = (r.created_at || '').slice(0, 10) || '—';
+        return `
+        <div class="review-card" style="animation-delay:${i * 0.05}s">
+          <div class="review-header">
+            <div>
+              <div class="reviewer-name">${escHtml(r.reviewer_name || 'Anonymous')}</div>
+              <div class="stars" style="font-size:.9rem;">${stars}</div>
+            </div>
+            <div class="review-date">${date}</div>
+          </div>
+          <div class="review-comment">${escHtml(r.comment || '')}</div>
+          <span class="sentiment-badge ${sentCls}">${sentTxt}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Star picker ────────────────────────────────────────────────────
+    function initStarPicker() {
+      const spans = document.querySelectorAll('.sp');
+      spans.forEach(sp => {
+        sp.addEventListener('mouseenter', () => highlightStars(parseInt(sp.dataset.val)));
+        sp.addEventListener('mouseleave', () => highlightStars(_selectedRating));
+        sp.addEventListener('click', () => {
+          _selectedRating = parseInt(sp.dataset.val);
+          highlightStars(_selectedRating);
+        });
+      });
+    }
+
+    function highlightStars(n) {
+      document.querySelectorAll('.sp').forEach(sp => {
+        const v = parseInt(sp.dataset.val);
+        sp.classList.toggle('active', v <= n);
+      });
+    }
+
+    // ── Submit review ──────────────────────────────────────────────────
+    async function submitReview() {
+      const name = document.getElementById('fName').value.trim();
+      const comment = document.getElementById('fComment').value.trim();
+      const btn = document.getElementById('submitReviewBtn');
+      const msg = document.getElementById('formMsg');
+
+      msg.style.display = 'none';
+
+      if (!name) return showFormMsg('Please enter your name.', false);
+      if (!_selectedRating) return showFormMsg('Please select a star rating.', false);
+      if (!comment) return showFormMsg('Please write a comment.', false);
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Submitting…';
+
+      try {
+        const res = await fetch('/api/reviews/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reviewer_name: name, rating: _selectedRating, comment }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showFormMsg('✅ Review submitted! Thank you.', true);
+          document.getElementById('fName').value = '';
+          document.getElementById('fComment').value = '';
+          _selectedRating = 0;
+          highlightStars(0);
+          setTimeout(loadReviews, 800);   // refresh list
+        } else {
+          showFormMsg('❌ Error: ' + (data.error || 'Submission failed.'), false);
+        }
+      } catch (e) {
+        showFormMsg('❌ Network error — check Flask server is running.', false);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✅ Submit Review';
+      }
+    }
+
+    function showFormMsg(text, ok) {
+      const el = document.getElementById('formMsg');
+      el.textContent = text;
+      el.className = 'form-msg ' + (ok ? 'ok' : 'err');
+      el.style.display = 'block';
+      if (ok) setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    // ── Render AI insights (Reviews, Stars & Likes based) ──────────────
+    function renderInsights(data) {
+      const insights = data.insights || {};
+
+      // Weak points
+      const wps = insights.weak_points || [];
+      const wpCountEl = document.getElementById('wpCount');
+      if (wpCountEl) wpCountEl.textContent = `${wps.length} found`;
+      
+      const wpListEl = document.getElementById('weakPointsList');
+      if (wpListEl) {
+        wpListEl.innerHTML = wps.map(wp => {
+          const cls = { high: 'sev-high', medium: 'sev-medium', low: 'sev-low' }[wp.severity] || 'sev-low';
+          return `
+          <div class="issue-row">
+            <div class="sev-dot ${cls}"></div>
+            <div class="issue-body">
+              <div class="issue-cat">${escHtml(wp.category || '')}</div>
+              <div class="issue-title">${escHtml(wp.issue || '')}</div>
+              <div class="issue-detail">${escHtml(wp.detail || '')}</div>
+              <span class="issue-action">🔧 ${escHtml(wp.action || '')}</span>
+              ${wp.impact ? `<div style="font-size:.73rem;color:var(--primary);margin-top:.3rem;">📈 ${escHtml(wp.impact)}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('') || '<div style="color:var(--muted);font-size:.88rem;">No weak points detected from reviews & likes!</div>';
+      }
+
+      // Recommendations
+      const recs = insights.recommendations || [];
+      const recListEl = document.getElementById('recList');
+      if (recListEl) {
+        recListEl.innerHTML = recs.map((r, i) => `
+        <div class="rec-row">
+          <span class="rec-num">${i + 1}</span>
+          ${escHtml(r)}
+        </div>`).join('') || '<div style="color:var(--muted);font-size:.88rem;">No recommendations.</div>';
+      }
+
+      // Strengths
+      const strs = insights.strengths || [];
+      const strListEl = document.getElementById('strengthList');
+      if (strListEl) {
+        strListEl.innerHTML = strs.map(s => `
+        <div class="strength-row">
+          <span class="tick">✅</span>
+          ${escHtml(s)}
+        </div>`).join('') || '<div style="color:var(--muted);font-size:.88rem;">No strengths recorded.</div>';
+      }
+    }
+
+    // ── Run full report via SSE ────────────────────────────────────────
+    function startReport() {
+      const btn = document.getElementById('runReportBtn');
+      const wrap = document.getElementById('progressWrap');
+      const fill = document.getElementById('progFill');
+      const text = document.getElementById('progText');
+      const log = document.getElementById('logArea');
+
+      btn.disabled = true;
+      wrap.classList.add('visible');
+      log.classList.add('visible');
+      log.textContent = '';
+      fill.style.width = '0%';
+      text.textContent = 'Starting analysis…';
+
+      const steps = ['Fetching reviews', 'Analyzing ratings & comments', 'Evaluating likes', 'Generating AI Insights'];
+      let stepIdx = 0;
+
+      const evtSrc = new EventSource('/api/marketing/report');
+
+      evtSrc.addEventListener('step', e => {
+        log.textContent += e.data + '\n';
+        log.scrollTop = log.scrollHeight;
+        stepIdx = Math.min(stepIdx + 1, steps.length);
+        const pct = Math.round((stepIdx / steps.length) * 85);
+        fill.style.width = pct + '%';
+        text.textContent = e.data;
+      });
+
+      evtSrc.addEventListener('report', e => {
+        fill.style.width = '100%';
+        text.textContent = '✅ Analysis complete!';
+        evtSrc.close();
+
+        try {
+          _reportData = JSON.parse(e.data);
+          renderInsights(_reportData);
+          if (_reportData.summary?.overall_health) {
+            renderRings(_reportData.summary.overall_health);
+          }
+          if (_reportData.reviews) {
+            renderReviewStats(_reportData.reviews);
+          }
+          if (_reportData.engagement) {
+            renderEngagement(_reportData.engagement);
+          }
+        } catch (err) {
+          console.error('Report parse error:', err);
+        }
+
+        setTimeout(() => {
+          wrap.classList.remove('visible');
+          log.classList.remove('visible');
+          btn.disabled = false;
+          btn.textContent = '🔄 Re-run Analysis';
+        }, 2000);
+      });
+
+      evtSrc.addEventListener('error', e => {
+        text.textContent = '❌ ' + (e.data || 'Analysis failed — check server logs.');
+        evtSrc.close();
+        btn.disabled = false;
+      });
+
+      evtSrc.onerror = () => {
+        if (fill.style.width === '100%') return;
+        text.textContent = 'Connection lost — try again.';
+        evtSrc.close();
+        btn.disabled = false;
+      };
+    }
+
+    // ── Render health rings ────────────────────────────────────────────
+    function renderRings(health) {
+      const rings = [
+        { key: 'overall', label: 'Overall', color: '#10b981' },
+        { key: 'reviews', label: 'Reviews', color: '#f59e0b' },
+        { key: 'seo', label: 'SEO', color: '#38bdf8' },
+        { key: 'performance', label: 'Performance', color: '#a78bfa' },
+        { key: 'content', label: 'Content', color: '#fb7185' },
+      ];
+
+      const row = document.getElementById('ringsRow');
+      row.innerHTML = rings.map(r => {
+        const val = health[r.key] ?? 0;
+        const circ = 251.2;
+        const off = circ - (val / 100) * circ;
+        return `
+        <div class="ring-item">
+          <div class="ring-wrap">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="40"/>
+              <circle class="ring-fill" cx="50" cy="50" r="40"
+                stroke="${r.color}"
+                style="stroke-dashoffset:${circ};--target-offset:${off};"
+                id="ring-${r.key}"/>
+            </svg>
+            <div class="ring-label">
+              <div class="val" style="color:${r.color};">${val}</div>
+              <div class="sub">/ 100</div>
+            </div>
+          </div>
+          <div class="ring-name">${r.label}</div>
+        </div>`;
+      }).join('');
+
+      // Animate rings after a tiny delay so layout settles
+      setTimeout(() => {
+        rings.forEach(r => {
+          const el = document.getElementById(`ring-${r.key}`);
+          if (!el) return;
+          const val = health[r.key] ?? 0;
+          const off = 251.2 - (val / 100) * 251.2;
+          el.style.strokeDashoffset = off;
+        });
+      }, 80);
+    }
+
+    // ── Render AI insights ─────────────────────────────────────────────
+    function renderInsights(data) {
+      const insights = data.insights || {};
+
+      // Weak points
+      const wps = insights.weak_points || [];
+      document.getElementById('wpCount').textContent = `${wps.length} found`;
+      document.getElementById('weakPointsList').innerHTML = wps.map(wp => {
+        const cls = { high: 'sev-high', medium: 'sev-medium', low: 'sev-low' }[wp.severity] || 'sev-low';
+        return `
+        <div class="issue-row">
+          <div class="sev-dot ${cls}"></div>
+          <div class="issue-body">
+            <div class="issue-cat">${escHtml(wp.category || '')}</div>
+            <div class="issue-title">${escHtml(wp.issue || '')}</div>
+            <div class="issue-detail">${escHtml(wp.detail || '')}</div>
+            <span class="issue-action">🔧 ${escHtml(wp.action || '')}</span>
+            ${wp.impact ? `<div style="font-size:.73rem;color:var(--primary);margin-top:.3rem;">📈 ${escHtml(wp.impact)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('') || '<div style="color:var(--muted);font-size:.88rem;">No weak points found — great job!</div>';
+
+      // Recommendations
+      const recs = insights.recommendations || [];
+      document.getElementById('recList').innerHTML = recs.map((r, i) => `
+      <div class="rec-row">
+        <span class="rec-num">${i + 1}</span>
+        ${escHtml(r)}
+      </div>`).join('');
+
+      // Strengths
+      const strs = insights.strengths || [];
+      document.getElementById('strengthList').innerHTML = strs.map(s => `
+      <div class="strength-row">
+        <span class="tick">✅</span>
+        ${escHtml(s)}
+      </div>`).join('') || '<div style="color:var(--muted);font-size:.88rem;">Run analysis to detect strengths.</div>';
+    }
+
+    // ── Render listing engagement metrics (Highly Visual) ──────────────
+    function renderEngagement(eng) {
+      const el = document.getElementById('engagementBody');
+      if (!el) return;
+      const totalLikes = eng.total_likes || 0;
+      const totalReviews = eng.total_listing_reviews || 0;
+      const topLiked = eng.top_liked_listings || [];
+      const perProp = eng.per_property_stats || [];
+
+      const maxLikes = topLiked.length ? (topLiked[0].likes || 1) : 1;
+
+      el.innerHTML = `
+      <!-- Likes Visual Card -->
+      <div style="background:rgba(15,23,42,.75);border:1px solid rgba(239,68,68,.25);border-radius:14px;padding:1.4rem;box-shadow:0 8px 24px rgba(239,68,68,.08)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div>
+            <div style="font-size:1.8rem;font-weight:800;color:#ef4444">❤️ ${totalLikes} Total Likes</div>
+            <div style="font-size:.78rem;color:var(--muted)">Buyer heart interactions across property inventory</div>
+          </div>
+          <span style="font-size:.75rem;font-weight:700;color:#ef4444;background:rgba(239,68,68,.15);padding:4px 10px;border-radius:99px;border:1px solid rgba(239,68,68,.3)">
+            🔥 Buyer Favorites
+          </span>
+        </div>
+
+        <div style="font-weight:700;font-size:.85rem;color:#f8fafc;margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem">
+          <span>🏆 Top Liked Properties</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+        ${topLiked.length ? topLiked.map(t => {
+          const pct = Math.round((t.likes / maxLikes) * 100);
+          return `
+          <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:.7rem 1rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+              <span style="color:#e2e8f0;font-weight:700;font-size:.82rem">📍 ${escHtml(t.property_id)}</span>
+              <span style="color:#ef4444;font-weight:800;font-size:.82rem;background:rgba(239,68,68,.12);padding:2px 8px;border-radius:6px">❤️ ${t.likes} likes</span>
+            </div>
+            <div style="background:rgba(255,255,255,.08);height:6px;border-radius:99px;overflow:hidden">
+              <div style="width:${pct}%;background:linear-gradient(90deg, #ef4444, #f87171);height:100%;border-radius:99px;transition:width .8s ease"></div>
+            </div>
+          </div>`;
+        }).join('') : '<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">No liked listings recorded yet.</div>'}
+        </div>
+      </div>
+
+      <!-- Listing Reviews Visual Card -->
+      <div style="background:rgba(15,23,42,.75);border:1px solid rgba(56,189,248,.25);border-radius:14px;padding:1.4rem;box-shadow:0 8px 24px rgba(56,189,248,.08)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div>
+            <div style="font-size:1.8rem;font-weight:800;color:#38bdf8">💬 ${totalReviews} Listing Reviews</div>
+            <div style="font-size:.78rem;color:var(--muted)">Property-specific customer ratings &amp; feedback</div>
+          </div>
+          <span style="font-size:.75rem;font-weight:700;color:#38bdf8;background:rgba(56,189,248,.15);padding:4px 10px;border-radius:99px;border:1px solid rgba(56,189,248,.3)">
+            ⭐ Verified Ratings
+          </span>
+        </div>
+
+        <div style="font-weight:700;font-size:.85rem;color:#f8fafc;margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem">
+          <span>📊 Per-Property Rating Breakdown</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+        ${perProp.length ? perProp.map(p => {
+          const ratingPct = Math.round((p.avg_rating / 5) * 100);
+          const starColor = p.avg_rating >= 4.0 ? '#10b981' : p.avg_rating >= 3.0 ? '#f59e0b' : '#ef4444';
+          return `
+          <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:.7rem 1rem">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+              <span style="color:#e2e8f0;font-weight:700;font-size:.82rem">🏡 ${escHtml(p.property_id)}</span>
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <span style="color:${starColor};font-weight:800;font-size:.82rem">⭐ ${p.avg_rating} / 5</span>
+                <span style="color:#94a3b8;font-size:.72rem;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px">(${p.reviews} rev)</span>
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,.08);height:6px;border-radius:99px;overflow:hidden">
+              <div style="width:${ratingPct}%;background:${starColor};height:100%;border-radius:99px;transition:width .8s ease"></div>
+            </div>
+          </div>`;
+        }).join('') : '<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">No listing-specific reviews recorded yet.</div>'}
+        </div>
+      </div>
+    `;
+    }
+
+    // ── Utilities ──────────────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+  </script>
+  <script src="/static/js/user_auth_banner.js"></script>
+</body>
+
+</html>

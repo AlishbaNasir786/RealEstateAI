@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RealEstate AI — Person A Unified Intelligence & Lead Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(22, 30, 46, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.3);
+      --secondary: #38bdf8;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    ::selection {
+      background: rgba(16, 185, 129, 0.35);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #253046;
+      border-radius: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #324066;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(16, 185, 129, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(56, 189, 248, 0.10) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP NAVBAR */
+    navbar {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 0.85rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* NAV TABS */
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+      background: var(--primary);
+      color: #042f2e;
+      box-shadow: 0 0 12px var(--primary-glow);
+      font-weight: 700;
+    }
+
+    .nav-tab.admin-only {
+      border: 1px dashed rgba(245, 158, 11, 0.4);
+    }
+
+    /* ROLE SWITCHER */
+    .role-switcher {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .role-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .switch-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .switch-btn.active-admin {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+
+    .switch-btn.active-client {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--secondary);
+      color: var(--secondary);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    /* MAIN CONTAINER */
+    .main-container {
+      max-width: 1240px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      flex-grow: 1;
+    }
+
+    /* MODULE VIEWS */
+    .module-view {
+      display: none;
+      animation: viewFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .module-view.active {
+      display: block;
+    }
+
+    @keyframes viewFade {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* MODULE HEADER BANNER */
+    .module-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .module-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    }
+
+    .banner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .banner-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .banner-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 750px;
+      line-height: 1.5;
+    }
+
+    /* CARD STYLES */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card-header {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* GRID LAYOUTS */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 900px) {
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* KPI STAT CARDS */
+    .kpi-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kpi-icon {
+      font-size: 1.5rem;
+    }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .kpi-trend {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* BUTTON STYLES */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #042f2e;
+    }
+
+    .btn-primary:hover {
+      background: #34d399;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* FORM CONTROLS */
+    .form-control {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    /* LOADING OVERLAY ANIMATION */
+    .loader-box {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--primary);
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: 0 0 30px var(--primary-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .spinner-ring {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(16, 185, 129, 0.15);
+      border-top-color: var(--primary);
+      border-right-color: var(--secondary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* AD PREVIEW CANVAS */
+    .ad-card {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .ad-header {
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .ad-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #000;
+    }
+
+    .ad-body {
+      padding: 1.25rem;
+    }
+
+    .ad-creative-box {
+      height: 220px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-radius: 12px;
+      margin: 1rem 0;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ad-tag {
+      align-self: flex-start;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .ad-headline {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .ad-footer {
+      padding: 1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* RESTRICTED ACCESS SCREEN */
+    .restricted-box {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px dashed rgba(239, 68, 68, 0.4);
+      border-radius: var(--radius);
+    }
+
+    .restricted-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    /* ── Virtual HD Tour button on property cards ─────────────────────────────── */
+    .btn-hd-tour {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-hd-tour:hover {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* ── HD Tour Side Panel ─────────────────────────────────────────────── */
+    #hdTourOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 9000;
+      backdrop-filter: blur(4px);
+    }
+
+    #hdTourPanel {
+      position: fixed;
+      top: 0;
+      right: -700px;
+      width: min(680px, 96vw);
+      height: 100vh;
+      background: #0f172a;
+      border-left: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
+      z-index: 9001;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.4s cubic-bezier(.16, 1, .3, 1);
+      overflow: hidden;
+    }
+
+    #hdTourPanel.open {
+      right: 0;
+    }
+
+    .hd-tour-header {
+      padding: 1.2rem 1.5rem;
+      background: linear-gradient(135deg, #0a1628, #0f1f3d);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hd-tour-header h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hd-tour-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #94a3b8;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all .2s;
+    }
+
+    .hd-tour-close:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    #hdTourBody {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.2rem;
+    }
+
+    #hdTourBody::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #hdTourBody::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+
+    #hdTourBody::-webkit-scrollbar-thumb {
+      background: #253046;
+      border-radius: 4px;
+    }
+
+    .sector-tour-item {
+      margin-bottom: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+
+    .sector-tour-item.active {
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .sector-tour-toggle {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #f1f5f9;
+      font-family: inherit;
+      transition: background .2s;
+    }
+
+    .sector-tour-toggle:hover {
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .sector-tour-toggle .stl {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .sector-tour-toggle .stag {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .sector-tour-toggle .arr {
+      color: #38bdf8;
+      font-size: 1rem;
+      transition: transform .3s;
+    }
+
+    .sector-tour-item.active .arr {
+      transform: rotate(180deg);
+    }
+
+    .sector-tour-body {
+      display: none;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .sector-tour-item.active .sector-tour-body {
+      display: block;
+    }
+
+    .sector-video-frame {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      margin-bottom: 0.9rem;
+    }
+
+    .sector-video-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .sector-desc {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.7;
+    }
+
+    .hd-tour-loading {
+      text-align: center;
+      padding: 3rem;
+      color: #475569;
+      font-size: 0.9rem;
+    }
+  </style>
+  <link rel="stylesheet" href="/static/css/luxury_theme.css">
+</head>
+
+<body>
+
+  <!-- TOP NAVBAR -->
+  <navbar>
+    <a href="#" class="brand">
+      <div class="brand-logo">🏢</div>
+      <div class="brand-text">
+        <h1>RealEstate AI</h1>
+        <span>Person A Unified Suite</span>
+      </div>
+    </a>
+
+    <!-- NAVIGATION TABS -->
+    <div class="nav-tabs">
+      <button class="nav-tab admin-only" id="tabMod1" onclick="switchTab('mod1')">
+        <span>📊</span> Competitor Engine <small>(Admin)</small>
+      </button>
+      <button class="nav-tab" id="tabMod3" onclick="switchTab('mod3')">
+        <span>🤖</span> Persona &amp; WhatsApp
+      </button>
+      <button class="nav-tab admin-only" id="tabMod5" onclick="switchTab('mod5')">
+        <span>📈</span> Marketing Reports <small>(Admin)</small>
+      </button>
+      <button class="nav-tab" id="tabMod8" onclick="switchTab('mod8')">
+        <span>🎯</span> Hyper-Ad Engine
+      </button>
+    </div>
+
+    <!-- ROLE SWITCHER -->
+    <div class="role-switcher">
+      <span class="role-label">View Mode:</span>
+      <button class="switch-btn active-admin" id="btnRoleAdmin" onclick="setRole('admin')">👑 Admin</button>
+      <button class="switch-btn" id="btnRoleClient" onclick="setRole('client')">👤 Client</button>
+    </div>
+  </navbar>
+
+  <!-- MAIN CONTAINER -->
+  <div class="main-container">
+    <section id="propertyShowcase" class="property-showcase"></section>
+
+    <!-- ================================================================= -->
+    <!-- MODULE 1: COMPETITOR INTELLIGENCE ENGINE (ADMIN ONLY) -->
+    <!-- ================================================================= -->
+    <div class="module-view" id="viewMod1">
+      <div class="module-banner">
+        <div class="banner-badge">Person A · Module 1</div>
+        <div class="banner-title">Competitor Intelligence &amp; Deep Market Analytics Engine</div>
+        <div class="banner-subtitle">
+          Scrapes and analyzes competitor campaigns, city pricing benchmarks, rent-vs-sale yield spreads, and featured
+          listing premiums across Pakistani real estate markets.
+        </div>
+      </div>
+
+      <!-- ADMIN CHECK WRAPPER -->
+      <div id="adminContentMod1">
+        <!-- FILTER CONTROLS -->
+        <div class="card">
+          <div class="card-header">
+            <span>🔍 Zameen.com Competitor Analytics Query</span>
+            <button class="btn btn-primary" id="btnRunComp" onclick="runCompetitorAnalysis()">
+              ⚡ Run Live Competitor Analysis
+            </button>
+          </div>
+
+          <div class="grid-3">
+            <div>
+              <label class="role-label" style="display:block; margin-bottom:6px;">Target City Scope</label>
+              <select class="form-control" id="compCity">
+                <option value="All">All 8 Cities (2,077 Listings Deep Crawl)</option>
+                <option value="Islamabad">Islamabad (Capital Zone)</option>
+                <option value="Karachi">Karachi (Commercial Powerhouse)</option>
+                <option value="Lahore">Lahore (Cultural Hub)</option>
+                <option value="Rawalpindi">Rawalpindi (Twin City Hub)</option>
+                <option value="Faisalabad">Faisalabad</option>
+                <option value="Multan">Multan</option>
+                <option value="Peshawar">Peshawar</option>
+                <option value="Quetta">Quetta</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="role-label" style="display:block; margin-bottom:6px;">Property Category Scope</label>
+              <select class="form-control" id="compType">
+                <option value="All">All Categories (Houses, Flats, Plots)</option>
+                <option value="House">Houses &amp; Independent Villas</option>
+                <option value="Flat">Flats &amp; Urban Apartments</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="role-label" style="display:block; margin-bottom:6px;">Analysis Mode</label>
+              <select class="form-control" id="compMode">
+                <option value="all">Sale &amp; Rental Full Report Integration</option>
+                <option value="for_sale">For Sale Market Deep-Dive</option>
+                <option value="for_rent">Rental Yield &amp; Monthly Rent Intelligence</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRESS LOADER OVERLAY -->
+        <div class="loader-box" id="compLoader" style="display:none; flex-direction:column; gap:1.5rem; padding:3rem;">
+          <!-- Top icon + heading -->
+          <div style="text-align:center;">
+            <div
+              style="font-size:2.5rem; margin-bottom:0.5rem; animation: spinGlow 2s linear infinite; display:inline-block;">
+              🤖</div>
+            <h3 style="font-size:1.35rem; font-weight:800; color:#fff; margin-bottom:4px;">
+              Scraping &amp; Analyzing Zameen.com Competitor Inventory...
+            </h3>
+            <p id="loaderStatusText" style="color:var(--primary); font-weight:600; font-size:0.9rem;">
+              📡 Initializing live Zameen.com connection...
+            </p>
+          </div>
+
+          <!-- Progress bar -->
+          <div style="width:100%; max-width:600px; margin:0 auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span
+                style="font-size:0.8rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;"
+                id="progressLabel">Starting...</span>
+              <span style="font-size:1.1rem; font-weight:800; color:var(--primary);" id="progressPct">0%</span>
+            </div>
+            <div
+              style="width:100%; height:14px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); position:relative;">
+              <div id="progressBarFill"
+                style="height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#10b981,#38bdf8,#10b981); background-size:200% 100%; transition:width 0.6s ease; animation:barShimmer 2s linear infinite;">
+              </div>
+            </div>
+            <div
+              style="display:flex; justify-content:space-between; margin-top:6px; font-size:0.72rem; color:var(--text-muted);">
+              <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+            </div>
+          </div>
+
+          <!-- Stage indicators -->
+          <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <div class="stage-chip" id="stage1"
+              style="display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:var(--primary); padding:6px 14px; border-radius:30px; font-size:0.8rem; font-weight:600;">
+              🔗 Connecting</div>
+            <div class="stage-chip" id="stage2"
+              style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:6px 14px; border-radius:30px; font-size:0.8rem; font-weight:600;">
+              🏙️ Scraping Cities</div>
+            <div class="stage-chip" id="stage3"
+              style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:6px 14px; border-radius:30px; font-size:0.8rem; font-weight:600;">
+              🔁 Deduplicating</div>
+            <div class="stage-chip" id="stage4"
+              style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:6px 14px; border-radius:30px; font-size:0.8rem; font-weight:600;">
+              📊 Generating Report</div>
+          </div>
+
+          <p style="text-align:center; font-size:0.78rem; color:var(--text-muted);">⏱️ This scrape typically takes 5–15
+            minutes — please don't close the tab.</p>
+        </div>
+
+        <style>
+          @keyframes barShimmer {
+            0% {
+              background-position: 0% 0
+            }
+
+            100% {
+              background-position: 200% 0
+            }
+          }
+
+          @keyframes spinGlow {
+            0% {
+              transform: rotate(0deg) scale(1);
+            }
+
+            50% {
+              transform: rotate(180deg) scale(1.1);
+            }
+
+            100% {
+              transform: rotate(360deg) scale(1);
+            }
+          }
+        </style>
+
+
+        <!-- FULL DETAILED COMPETITOR INTELLIGENCE REPORT EMBEDDED -->
+        <div id="compReportOutput">
+          <iframe id="compReportIframe" src="data/competitor_report.html"
+            style="width:100%; height:1250px; border:none; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.5);"></iframe>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODULE 3: AI BUYER PERSONA & WHATSAPP ENGINE (ALL USERS) -->
+    <!-- ================================================================= -->
+    <div class="module-view" id="viewMod3">
+      <div class="module-banner">
+        <div class="banner-badge">Person A · Module 3</div>
+        <div class="banner-title">AI Buyer Persona Profiler &amp; WhatsApp Engine</div>
+        <div class="banner-subtitle">
+          Qualifies real estate leads into dynamic buyer personas, recommends platform channel ratings, and
+          auto-generates formatted WhatsApp posts with recipient phone deep-linking.
+        </div>
+      </div>
+
+      <!-- EMBEDDED PERSONA WIZARD APPLICATION -->
+      <iframe src="persona_app.html"
+        style="width:100%; height:950px; border:none; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.5);"></iframe>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODULE 5: MARKETING PERFORMANCE REPORT GENERATOR (ADMIN ONLY) -->
+    <!-- ================================================================= -->
+    <div class="module-view" id="viewMod5">
+      <div class="module-banner">
+        <div class="banner-badge">Person A · Module 5</div>
+        <div class="banner-title">Marketing Report Generator &amp; AI Recommendations</div>
+        <div class="banner-subtitle">
+          Automatically aggregates multi-channel lead acquisition metrics, generates ROI reports, and provides AI
+          strategic guidance.
+        </div>
+      </div>
+
+      <div id="adminContentMod5">
+        <!-- METRIC CARDS -->
+        <div class="grid-4" style="margin-bottom:1.5rem;">
+          <div class="kpi-card">
+            <div class="kpi-icon">🎯</div>
+            <div class="kpi-label">Lead Conversion Rate</div>
+            <div class="kpi-value">18.4%</div>
+            <div class="kpi-trend">↑ 3.1% this month</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon">💵</div>
+            <div class="kpi-label">Avg Cost Per Qualified Lead</div>
+            <div class="kpi-value">PKR 1,420</div>
+            <div class="kpi-trend" style="color:var(--secondary);">↓ 12% Cost Reduction</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon">📲</div>
+            <div class="kpi-label">WhatsApp Post Shares</div>
+            <div class="kpi-value">1,248</div>
+            <div class="kpi-trend">✓ 98% Open Rate</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon">👑</div>
+            <div class="kpi-label">Marketing Return (ROI)</div>
+            <div class="kpi-value">4.85x</div>
+            <div class="kpi-trend">↑ Top Performer</div>
+          </div>
+        </div>
+
+        <!-- CHANNEL PERFORMANCE BREAKDOWN -->
+        <div class="card">
+          <div class="card-header">
+            <span>📊 Channel Lead Performance</span>
+            <button class="btn btn-secondary" onclick="alert('Exporting PDF Performance Report...')">
+              📥 Export Full Report
+            </button>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Marketing Channel</th>
+                <th>Target Persona</th>
+                <th>Total Enquiries</th>
+                <th>Qualified Leads</th>
+                <th>Conversion %</th>
+                <th>Channel Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>WhatsApp Direct Broadcast</strong></td>
+                <td>Young Investors</td>
+                <td>485</td>
+                <td>312</td>
+                <td>64.3%</td>
+                <td><span style="color:var(--primary); font-weight:700;">🟢 Top Converter</span></td>
+              </tr>
+              <tr>
+                <td><strong>Instagram Reels Video</strong></td>
+                <td>First-Time Homebuyers</td>
+                <td>620</td>
+                <td>280</td>
+                <td>45.1%</td>
+                <td><span style="color:var(--primary); font-weight:700;">🟢 High Engagement</span></td>
+              </tr>
+              <tr>
+                <td><strong>Facebook Meta Ads</strong></td>
+                <td>Family Upgraders</td>
+                <td>390</td>
+                <td>145</td>
+                <td>37.1%</td>
+                <td><span style="color:var(--accent); font-weight:700;">🟡 Steady Yield</span></td>
+              </tr>
+              <tr>
+                <td><strong>LinkedIn B2B Network</strong></td>
+                <td>Luxury Real Estate Seekers</td>
+                <td>180</td>
+                <td>95</td>
+                <td>52.7%</td>
+                <td><span style="color:var(--secondary); font-weight:700;">🔵 Executive Quality</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODULE 8: HYPER-PERSONALIZED ADVERTISEMENT ENGINE (ALL USERS) -->
+    <!-- ================================================================= -->
+    <div class="module-view" id="viewMod8">
+      <div class="module-banner">
+        <div class="banner-badge">Person A · Module 8</div>
+        <div class="banner-title">Hyper-Personalized Advertisement Engine</div>
+        <div class="banner-subtitle">
+          Generates tailored real estate advertisement copy, visual headlines, and targeted specs customized
+          specifically to individual customer buyer preferences.
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- AD GENERATOR CONTROLS -->
+        <div class="card">
+          <div class="card-header">
+            <span>⚙️ Configure Ad Parameters</span>
+          </div>
+
+          <div style="margin-bottom:1.25rem;">
+            <label class="role-label" style="display:block; margin-bottom:6px;">Target Buyer Segment</label>
+            <select class="form-control" id="adPersona" onchange="generateHyperAd()">
+              <option value="investor">Young Investor (High Yield &amp; Growth)</option>
+              <option value="first_buyer">First-Time Buyer (Security &amp; Installments)</option>
+              <option value="family">Family Upgrader (Space, Schools &amp; Parks)</option>
+              <option value="luxury">Luxury Seeker (Executive Privacy &amp; Penthouses)</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom:1.25rem;">
+            <label class="role-label" style="display:block; margin-bottom:6px;">Target City</label>
+            <select class="form-control" id="adCity" onchange="generateHyperAd()">
+              <option value="Islamabad">Islamabad</option>
+              <option value="Lahore">Lahore</option>
+              <option value="Karachi">Karachi</option>
+              <option value="Rawalpindi">Rawalpindi</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom:1.5rem;">
+            <label class="role-label" style="display:block; margin-bottom:6px;">Ad Format / Platform</label>
+            <select class="form-control" id="adPlatform" onchange="generateHyperAd()">
+              <option value="instagram">Instagram Reel / Feed Banner</option>
+              <option value="facebook">Facebook Sponsored Post</option>
+              <option value="whatsapp">WhatsApp Direct Promo Card</option>
+              <option value="linkedin">LinkedIn Executive Sponsored Ad</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="generateHyperAd()">
+            ✨ Generate Hyper-Personalized Creative
+          </button>
+        </div>
+
+        <!-- LIVE AD CREATIVE PREVIEW CANVAS -->
+        <div class="ad-card">
+          <div class="ad-header">
+            <div class="ad-avatar">AI</div>
+            <div>
+              <div style="font-weight:700; font-size:0.9rem; color:#fff;" id="adBrandName">RealEstate AI Marketing</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);" id="adPlatformTag">Sponsored · Instagram Banner
+              </div>
+            </div>
+          </div>
+
+          <div class="ad-body">
+            <div class="ad-creative-box" id="adBox">
+              <div class="ad-tag" id="adTagText">HIGH YIELD INVESTOR</div>
+              <div class="ad-headline" id="adHeadlineText">
+                14% Guaranteed Rental Yield in Top City Islamabad
+              </div>
+            </div>
+
+            <p id="adBodyText"
+              style="font-size:0.875rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem;">
+              Targeted ROI deal with instant pre-launch pricing. High appreciation potential for smart capital
+              deployment.
+            </p>
+          </div>
+
+          <div class="ad-footer">
+            <span style="font-size:0.8rem; color:var(--primary); font-weight:700;" id="adCta">
+              📲 Tap to Calculate ROI via WhatsApp
+            </span>
+            <button class="btn btn-secondary" style="padding:6px 14px; font-size:0.8rem;" onclick="copyAdCopy()">
+              📋 Copy Ad Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESTRICTED ACCESS WARNING SCREEN (FOR CLIENT VIEW ON ADMIN TABS) -->
+    <div class="restricted-box" id="restrictedView" style="display:none;">
+      <div class="restricted-icon">👑</div>
+      <h2 style="font-size:1.5rem; font-weight:800; color:#fff; margin-bottom:0.5rem;">
+        Admin-Only Module Access
+      </h2>
+      <p style="color:var(--text-muted); max-width:500px; margin:0 auto 1.5rem auto; font-size:0.925rem;">
+        This module is reserved for platform Administrators. Switch to <strong>👑 Admin View</strong> in the top
+        navigation bar to access this module.
+      </p>
+      <button class="btn btn-primary" onclick="setRole('admin')">👑 Switch to Admin View</button>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    RealEstate AI — Person A Unified Suite | Dual Scraper, Competitor Intelligence, Persona Generator &amp; Hyper-Ad
+    Engine
+  </footer>
+
+  <script>
+    // GLOBAL STATE
+    let currentRole = 'admin'; // 'admin' or 'client'
+    let currentTab = 'mod1';    // 'mod1', 'mod3', 'mod5', 'mod8'
+
+    // ROLE SWITCHER LOGIC
+    function setRole(role) {
+      currentRole = role;
+      document.body.setAttribute('data-role', role);  // CSS uses this to show/hide admin controls
+
+      const btnAdmin = document.getElementById('btnRoleAdmin');
+      const btnClient = document.getElementById('btnRoleClient');
+
+      if (role === 'admin') {
+        btnAdmin.className = "switch-btn active-admin";
+        btnClient.className = "switch-btn";
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-flex');
+      } else {
+        btnAdmin.className = "switch-btn";
+        btnClient.className = "switch-btn active-client";
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        // If currently on an admin-only tab, auto-switch to public Module 3
+        if (currentTab === 'mod1' || currentTab === 'mod5') {
+          switchTab('mod3');
+        }
+      }
+
+      updateTabVisibility();
+    }
+
+    // TAB SWITCHER LOGIC
+    function switchTab(tabId) {
+      currentTab = tabId;
+
+      // Update Nav Tab UI
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      const activeNavTab = document.getElementById(`tab${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
+      if (activeNavTab) activeNavTab.classList.add('active');
+
+      // Hide all module views
+      document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('restrictedView').style.display = 'none';
+
+      // Check RBAC Scope
+      if ((tabId === 'mod1' || tabId === 'mod5') && currentRole !== 'admin') {
+        document.getElementById('restrictedView').style.display = 'block';
+      } else {
+        const targetView = document.getElementById(`view${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
+        if (targetView) targetView.classList.add('active');
+      }
+    }
+
+    function updateTabVisibility() {
+      switchTab(currentTab);
+    }
+
+    // MODULE 1: COMPETITOR ENGINE WITH LIVE PROGRESS BAR
+    let _progressInterval = null;
+    let _displayedPct = 0;       // floor — bar never goes backwards
+    let _saleDone = false;        // tracks whether FOR_SALE phase finished
+
+    function setProgress(rawPct, labelText, statusText) {
+      // Never go backwards
+      const pct = Math.max(Math.min(rawPct, 100), _displayedPct);
+      _displayedPct = pct;
+
+      const fill = document.getElementById('progressBarFill');
+      const pctEl = document.getElementById('progressPct');
+      const labelEl = document.getElementById('progressLabel');
+      const statusEl = document.getElementById('loaderStatusText');
+      if (fill) fill.style.width = pct + '%';
+      if (pctEl) pctEl.innerText = Math.round(pct) + '%';
+      if (labelEl && labelText) labelEl.innerText = labelText;
+      if (statusEl && statusText) statusEl.innerText = statusText;
+    }
+
+    function activateStage(n) {
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById('stage' + i);
+        if (!el) continue;
+        if (i < n) {
+          el.style.background = 'rgba(16,185,129,0.08)';
+          el.style.borderColor = 'rgba(16,185,129,0.2)';
+          el.style.color = '#0f766e';
+          el.style.boxShadow = 'none';
+        } else if (i === n) {
+          el.style.background = 'rgba(16,185,129,0.18)';
+          el.style.borderColor = 'rgba(16,185,129,0.5)';
+          el.style.color = 'var(--primary)';
+          el.style.boxShadow = '0 0 12px rgba(16,185,129,0.3)';
+        } else {
+          el.style.background = 'rgba(255,255,255,0.04)';
+          el.style.borderColor = 'rgba(255,255,255,0.1)';
+          el.style.color = 'var(--text-muted)';
+          el.style.boxShadow = 'none';
+        }
+      }
+    }
+
+    function startSimulatedProgress() {
+      // Simulates steady forward progress while backend scrapes pages
+      _progressInterval = setInterval(() => {
+        if (_displayedPct < 88) {
+          const next = _displayedPct + 0.3;
+          const stageN = next < 5 ? 1 : (next < 85 ? 2 : 3);
+          activateStage(stageN);
+          setProgress(next, next < 5 ? '🔗 Connecting to Zameen.com...' : '🏙️ Scraping Zameen.com live listings...', `📡 Scraping live listings across 8 cities (${Math.round(next)}%)...`);
+        }
+      }, 400);
+    }
+
+    async function runCompetitorAnalysis() {
+      const loader = document.getElementById('compLoader');
+      const output = document.getElementById('compReportOutput');
+
+      // Reset state
+      _displayedPct = 0;
+      _saleDone = false;
+
+      output.style.display = 'none';
+      loader.style.display = 'flex';
+      setProgress(0, 'Starting...', '📡 Initializing live Zameen.com connection...');
+      activateStage(1);
+
+      if (window.location.protocol === 'file:') {
+        setProgress(100, '❌ Server Required', '❌ App must be run via Flask. Please run "python app.py" and open http://127.0.0.1:5000');
+        setTimeout(() => { loader.style.display = 'none'; output.style.display = 'block'; }, 6000);
+        return;
+      }
+
+      startSimulatedProgress();
+
+      try {
+        const response = await fetch('/api/run_competitor_engine', { method: 'GET' });
+
+        if (response.ok) {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            for (let line of chunk.split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.replace('data: ', '').trim();
+
+              if (data === '[DONE]') {
+                clearInterval(_progressInterval);
+                activateStage(4);
+                setProgress(100, '✅ All segments scraped!', '✅ Scrape complete — refreshing report...');
+                const iframe = document.getElementById('compReportIframe');
+                iframe.src = iframe.src.split('?')[0] + '?t=' + new Date().getTime();
+                setTimeout(() => { loader.style.display = 'none'; output.style.display = 'block'; }, 1500);
+                return;
+
+              } else if (data === '[ERROR]') {
+                throw new Error('Scraping failed');
+
+              } else if (data.includes('%') && data.includes('/')) {
+                // Backend emits progress updates per page/segment
+                const pctM = data.match(/([\d.]+)%/);
+                const segM = data.match(/(\d+)\/(\d+)/);
+                const modeM = data.match(/FOR[_\s](SALE|RENT)/i);
+                if (!pctM) continue;
+
+                const rawPct = parseFloat(pctM[1]);
+                const segText = segM ? `${segM[1]} of ${segM[2]} segments` : '';
+                const isRent = modeM && modeM[1].toUpperCase() === 'RENT';
+
+                if (isRent) _saleDone = true;
+
+                // Map each phase to its display slice
+                let displayPct, stageN, modeLabel;
+                if (!isRent) {
+                  // FOR_SALE → 5% to 49%
+                  displayPct = 5 + (rawPct / 100) * 44;
+                  stageN = 2;
+                  modeLabel = `FOR SALE scrape — ${segText}`;
+                } else {
+                  // FOR_RENT → 50% to 93%
+                  displayPct = 50 + (rawPct / 100) * 43;
+                  stageN = rawPct >= 90 ? 3 : 2;
+                  modeLabel = `FOR RENT scrape — ${segText}`;
+                }
+
+                activateStage(stageN);
+                setProgress(displayPct, modeLabel, `📊 ${isRent ? 'RENT' : 'SALE'} phase: ${rawPct.toFixed(0)}% — overall ${Math.round(displayPct)}% complete`);
+              }
+            }
+          }
+        } else {
+          throw new Error('Server error');
+        }
+      } catch (err) {
+        clearInterval(_progressInterval);
+        setProgress(100, '❌ Error', `❌ ${err.message || 'Connection error. Showing previous data.'}`);
+        setTimeout(() => { loader.style.display = 'none'; output.style.display = 'block'; }, 3500);
+      }
+    }
+
+    // MODULE 8: HYPER-PERSONALIZED AD ENGINE
+    function generateHyperAd() {
+      const persona = document.getElementById('adPersona').value;
+      const city = document.getElementById('adCity').value;
+      const platform = document.getElementById('adPlatform').value;
+
+      const tagEl = document.getElementById('adTagText');
+      const headEl = document.getElementById('adHeadlineText');
+      const bodyEl = document.getElementById('adBodyText');
+      const ctaEl = document.getElementById('adCta');
+      const platTag = document.getElementById('adPlatformTag');
+
+      platTag.innerText = `Sponsored · ${platform.toUpperCase()} Ad Creative`;
+
+      if (persona === 'investor') {
+        tagEl.innerText = 'HIGH YIELD INVESTOR';
+        headEl.innerText = `14% Guaranteed Rental Yield in Prime ${city}`;
+        bodyEl.innerText = `Handpicked pre-launch price opportunity in ${city}. Optimized for capital growth and instant rental predictability.`;
+        ctaEl.innerText = '📲 Tap to Calculate ROI via WhatsApp';
+      } else if (persona === 'first_buyer') {
+        tagEl.innerText = 'SECURITY & TITLE VERIFIED';
+        headEl.innerText = `Own Your Dream Home in ${city} with 10% Down`;
+        bodyEl.innerText = `NOC verified clear title guaranteed. Easy 3-year installment plan designed for first-time buyers.`;
+        ctaEl.innerText = '🔑 View NOC & Payment Breakdown';
+      } else if (persona === 'family') {
+        tagEl.innerText = 'FAMILY NEST & PARKS';
+        headEl.innerText = `Spacious 5-Bed Luxury Villa in ${city} Gated Society`;
+        bodyEl.innerText = `Minutes away from top grammar schools, family parks, and 24/7 security surveillance.`;
+        ctaEl.innerText = '🏡 Schedule Private Family Walkthrough';
+      } else if (persona === 'luxury') {
+        tagEl.innerText = 'EXECUTIVE PENTHOUSE';
+        headEl.innerText = `Bespoke Executive Residence on ${city}'s Boulevard`;
+        bodyEl.innerText = `Italian marble finishes, private skyline deck, and discreet white-glove VIP concierge.`;
+        ctaEl.innerText = '💎 Access Off-Market Private Portfolio';
+      }
+    }
+
+    function copyAdCopy() {
+      const head = document.getElementById('adHeadlineText').innerText;
+      const body = document.getElementById('adBodyText').innerText;
+      const copyText = `${head}\n\n${body}`;
+
+      navigator.clipboard.writeText(copyText).then(() => {
+        alert('Ad Copy copied to clipboard!');
+      });
+    }
+  </script>
+
+  <!-- ═══════─ VIRTUAL HD TOUR PANEL ─═══════ -->
+  <div id="hdTourOverlay" onclick="closeHdTourPanel()"></div>
+  <div id="hdTourPanel">
+    <div class="hd-tour-header">
+      <h2>🎬 Virtual HD Tour &mdash; Sector Showcase</h2>
+      <button class="hd-tour-close" onclick="closeHdTourPanel()">×</button>
+    </div>
+    <div id="hdTourBody">
+      <div class="hd-tour-loading">⏳ Loading sector videos from database…</div>
+    </div>
+  </div>
+
+  <script>
+    /* ── HD Tour Panel  —  fully dynamic from /api/sector-videos ────────────── */
+    let _tourVideos = [];    // cached from DB
+    let _tourLoaded = false;
+
+    async function loadSectorTourPanel() {
+      try {
+        const res = await fetch('/api/sector-videos');
+        const data = await res.json();
+        _tourVideos = data.videos || [];
+        _tourLoaded = true;
+        _renderTourBody();
+      } catch (e) {
+        document.getElementById('hdTourBody').innerHTML =
+          '<div class="hd-tour-loading" style="color:#f87171">❌ Failed to load sector videos. Please refresh.</div>';
+      }
+    }
+
+    function _renderTourBody(activeSector) {
+      const body = document.getElementById('hdTourBody');
+      if (!_tourVideos.length) {
+        body.innerHTML = '<div class="hd-tour-loading">No sector videos found in database.</div>';
+        return;
+      }
+      body.innerHTML = '';
+      _tourVideos.forEach(v => {
+        const isActive = activeSector && v.sector.toLowerCase() === activeSector.toLowerCase();
+        const item = document.createElement('div');
+        item.className = 'sector-tour-item' + (isActive ? ' active' : '');
+        item.id = 'tourItem-' + v.sector.replace(/\s+/g, '_');
+        item.innerHTML = `
+        <button class="sector-tour-toggle" onclick="toggleTourItem(this.closest('.sector-tour-item'), '${v.sector.replace(/'/g, "\\'")}')"
+                id="tourToggle-${v.id}">
+          <div>
+            <div class="stl">📍 ${v.sector} &mdash; <span style="color:#38bdf8">${_esc(v.title)}</span></div>
+            <div class="stag">${_esc(v.tagline || '')}</div>
+          </div>
+          <span class="arr">▼</span>
+        </button>
+        <div class="sector-tour-body">
+          <div class="sector-video-frame">
+            <iframe src="${_esc(v.video_url)}" allowfullscreen loading="lazy"
+                    title="${_esc(v.title)}"></iframe>
+          </div>
+          <p class="sector-desc">${_esc(v.description || '')}</p>
+          <div style="display:flex;gap:0.7rem;margin-top:0.9rem;">
+            <a href="/persona_app.html" style="flex:1;padding:0.65rem;text-align:center;border-radius:8px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981;font-size:0.8rem;font-weight:700;text-decoration:none;"
+               title="Find properties in ${_esc(v.sector)}">🏠 Find Properties in ${_esc(v.sector)}</a>
+            <a href="https://wa.me/923165756055" target="_blank"
+               style="flex:1;padding:0.65rem;text-align:center;border-radius:8px;background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.3);color:#25d366;font-size:0.8rem;font-weight:700;text-decoration:none;">💬 Ask Agent</a>
+          </div>
+        </div>`;
+        body.appendChild(item);
+      });
+    }
+
+    function toggleTourItem(item, sector) {
+      const wasActive = item.classList.contains('active');
+      document.querySelectorAll('.sector-tour-item').forEach(el => el.classList.remove('active'));
+      if (!wasActive) item.classList.add('active');
+    }
+
+    function openSectorTourPanel(sector) {
+      document.getElementById('hdTourOverlay').style.display = 'block';
+      document.getElementById('hdTourPanel').classList.add('open');
+      if (_tourLoaded) {
+        _renderTourBody(sector);
+        // Scroll to that sector
+        setTimeout(() => {
+          const key = (sector || '').replace(/\s+/g, '_');
+          const el = document.getElementById('tourItem-' + key);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      }
+    }
+
+    function closeHdTourPanel() {
+      document.getElementById('hdTourOverlay').style.display = 'none';
+      document.getElementById('hdTourPanel').classList.remove('open');
+    }
+
+    function _esc(s) {
+      return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+
+  <script src="/static/js/home_properties.js"></script>
+
+  <script>
+    // INITIALIZATION
+    document.addEventListener('DOMContentLoaded', () => {
+      setRole('admin');
+      generateHyperAd();
+      loadSectorTourPanel();
+    });
+  </script>
+
+</body>
+
+</html>
