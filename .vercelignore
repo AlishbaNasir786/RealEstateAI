@@ -1,0 +1,13 @@
+# Exclude large/unnecessary files from Vercel deployment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.db
+modules/brand_memory/chroma_db/
+local_deleted.json
+data/*.html
+*.raw.html
+_test_marketing.py
+test_api_res.json
