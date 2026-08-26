@@ -75,6 +75,10 @@ def get_auth_config():
 def index():
     return send_from_directory('.', 'property.html')
 
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+
 @app.route('/competitor')
 @admin_required
 def competitor():
