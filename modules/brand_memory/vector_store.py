@@ -1,4 +1,4 @@
-"""
+﻿"""
 vector_store.py — ChromaDB Vector Store
 This is the vector index: it persists chunk embeddings to a local
 ChromaDB collection (on disk under modules/brand_memory/chroma_db/) and
@@ -16,7 +16,7 @@ from chromadb.utils.embedding_functions import EmbeddingFunction
 
 from .embeddings import embed_batch, EMBED_DIM
 
-CHROMA_DIR = os.path.join(os.path.dirname(__file__), "chroma_db")
+CHROMA_DIR = os.path.join(os.environ.get("TMPDIR", "/tmp") if os.environ.get("VERCEL") else os.path.dirname(__file__), "chroma_db")
 COLLECTION_NAME = "brand_knowledge"
 
 

@@ -1,4 +1,4 @@
-"""
+﻿"""
 auth_db.py — User Authentication & Database Management
 Handles user signup, login, Google OAuth integration, session tokens,
 role-based access control (admin / client), and persona segment persistence.
@@ -25,7 +25,7 @@ import sqlite3
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-DB_FILE = os.path.join(os.path.dirname(__file__), "users_store.db")
+DB_FILE = os.path.join(os.environ.get("TMPDIR", "/tmp") if os.environ.get("VERCEL") else os.path.dirname(__file__), "users_store.db")
 
 # ── ADMIN CREDENTIALS ────────────────────────────────────────────────────────
 ADMIN_EMAIL    = "admin@realestate-ai.pk"

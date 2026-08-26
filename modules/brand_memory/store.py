@@ -1,4 +1,4 @@
-"""
+﻿"""
 store.py — Brand Memory Document Store (Vector-Backed)
 Stores brand/company documents (about us, policies, FAQs, PDFs of
 brochures/contracts, tone-of-voice guides, etc.) and indexes them for
@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from .pdf_utils import extract_text_from_pdf, chunk_text
 from . import vector_store
 
-DB_FILE = os.path.join(os.path.dirname(__file__), "brand_memory_store.db")
+DB_FILE = os.path.join(os.environ.get("TMPDIR", "/tmp") if os.environ.get("VERCEL") else os.path.dirname(__file__), "brand_memory_store.db")
 
 
 def _get_conn():
