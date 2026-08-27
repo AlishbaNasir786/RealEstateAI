@@ -33,6 +33,9 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
     }
 
     ::selection {
@@ -67,6 +70,10 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
+      position: relative;
     }
 
     /* TOP NAVBAR */
@@ -423,8 +430,8 @@
 
       /* HD Tour panel: full width on mobile */
       #hdTourPanel {
-        width: 100vw;
-        right: -100vw;
+        width: 100%;
+        max-width: 100%;
       }
     }
 
@@ -672,8 +679,9 @@
     #hdTourPanel {
       position: fixed;
       top: 0;
-      right: -700px;
-      width: min(680px, 96vw);
+      right: 0;
+      width: min(680px, 100vw);
+      max-width: 100%;
       height: 100vh;
       background: #0f172a;
       border-left: 1px solid rgba(56, 189, 248, 0.25);
@@ -681,12 +689,17 @@
       z-index: 9001;
       display: flex;
       flex-direction: column;
-      transition: right 0.4s cubic-bezier(.16, 1, .3, 1);
+      transform: translateX(100%);
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 0.4s cubic-bezier(.16, 1, .3, 1), visibility 0.4s;
       overflow: hidden;
     }
 
     #hdTourPanel.open {
-      right: 0;
+      transform: translateX(0);
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .hd-tour-header {

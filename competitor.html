@@ -40,16 +40,23 @@
       background: #324066;
     }
 
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; width: 100%; }
+
     body {
       margin: 0;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      min-height: 100vh;
       background-color: #090d16;
       background-image:
         radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.12) 0%, transparent 40%),
         radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.10) 0%, transparent 40%);
       color: #f8fafc;
+      overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
+      position: relative;
     }
 
     /* ── Top bar ────────────────────────────────────────────────── */

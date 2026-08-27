@@ -27,7 +27,12 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+}
 
 ::selection { background: rgba(16, 185, 129, 0.3); color: #fff; }
 
@@ -45,6 +50,10 @@ body {
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  position: relative;
 }
 
 /* ── HERO SECTION ──────────────────────────────────────────────── */
@@ -53,12 +62,13 @@ body {
   padding: 3.5rem 2rem 2rem;
   position: relative;
   overflow: hidden;
+  max-width: 100%;
 }
 .hero-section::before {
   content: '';
   position: absolute;
   top: -60px; left: 50%; transform: translateX(-50%);
-  width: 800px; height: 400px;
+  width: min(800px, 100vw); height: 400px;
   background: radial-gradient(ellipse, rgba(16,185,129,0.08) 0%, transparent 70%);
   pointer-events: none;
 }

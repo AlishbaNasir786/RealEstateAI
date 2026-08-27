@@ -389,9 +389,9 @@ function _showGoogleSignInFallback() {
   const overlay = document.createElement('div');
   overlay.id = 'googleFallbackOverlay';
   overlay.style.cssText = [
-    'position:fixed; top:0; left:0; width:100vw; height:100vh;',
-    'background:rgba(9,13,22,0.92); backdrop-filter:blur(20px);',
-    'display:flex; align-items:center; justify-content:center; z-index:20000;',
+    'position:fixed; inset:0; width:100%; height:100%;',
+    'background:rgba(9,13,22,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);',
+    'display:flex; align-items:center; justify-content:center; z-index:20000; box-sizing:border-box; padding:1rem;',
     'animation:gfIn 0.3s ease;'
   ].join('');
 
@@ -616,9 +616,10 @@ function injectAuthStyles() {
       border-radius: 16px; margin: 1rem 2rem 0.5rem; padding: 0.9rem 1.4rem;
       display: flex; align-items: center; justify-content: space-between; gap: 1rem;
       animation: slideDown 0.4s ease; flex-wrap: wrap;
+      box-sizing: border-box; max-width: calc(100% - 4rem);
     }
     @keyframes slideDown { from { transform: translateY(-30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-    .p-banner-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 280px; }
+    .p-banner-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 260px; box-sizing: border-box; }
     .p-banner-icon-ring {
       font-size: 1.8rem; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4);
       width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -664,7 +665,7 @@ function injectAuthStyles() {
     }
 
     .auth-modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      position: fixed; inset: 0; width: 100%; height: 100%;
       background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       display: none; align-items: center; justify-content: center; z-index: 999999;
       overflow-y: auto; padding: 2rem 1rem; box-sizing: border-box;
@@ -814,14 +815,17 @@ function injectAuthStyles() {
       .personalized-banner {
         flex-direction: column;
         align-items: flex-start;
-        margin: 0.75rem 0.75rem 0.5rem;
+        margin: 0.75rem auto 0.5rem;
         padding: 0.85rem 1rem;
         gap: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+        box-sizing: border-box;
       }
-      .p-banner-left { min-width: 0; width: 100%; }
+      .p-banner-left { min-width: 0; width: 100%; box-sizing: border-box; }
       .p-banner-right {
         width: 100%;
         justify-content: flex-end;
+        box-sizing: border-box;
       }
       .p-banner-title { font-size: 0.9rem; }
       .p-banner-sub { font-size: 0.78rem; text-align: left; }

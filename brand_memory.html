@@ -15,9 +15,10 @@
     --purple:#a78bfa;--text:#f8fafc;--muted:#94a3b8;--radius:16px;
   }
   *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif;}
+  html{scroll-behavior:smooth;overflow-x:hidden;max-width:100%;width:100%;}
   ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-track{background:var(--bg);}
   ::-webkit-scrollbar-thumb{background:#253046;border-radius:8px;}
-  body{background:var(--bg);color:var(--text);min-height:100vh;
+  body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;max-width:100%;width:100%;position:relative;
     background-image:
       radial-gradient(circle at 10% 10%, rgba(167,139,250,.10) 0%,transparent 40%),
       radial-gradient(circle at 90% 80%, rgba(56,189,248,.10) 0%,transparent 40%);}
