@@ -42,9 +42,20 @@ async function initAuthAndBanner() {
 }
 
 /* ── RENDER HEADER USER BADGE & ROLE NAV PROTECTION ───────────── */
+/* ── RENDER HEADER USER BADGE & ROLE NAV PROTECTION ───────────── */
 function renderUserHeaderBadge(isLoggedIn) {
   let nav = document.querySelector('.top-nav');
   if (!nav) return;
+
+  // Ensure nav links are cleanly wrapped into a dedicated scrollable container
+  let linksContainer = nav.querySelector('.top-nav-links');
+  if (!linksContainer) {
+    linksContainer = document.createElement('div');
+    linksContainer.className = 'top-nav-links';
+    const links = Array.from(nav.querySelectorAll(':scope > a'));
+    links.forEach(l => linksContainer.appendChild(l));
+    nav.insertBefore(linksContainer, nav.firstChild);
+  }
 
   // Enforce Admin-Only Nav Links:
   // - Admins: show all nav links
@@ -84,12 +95,13 @@ function renderUserHeaderBadge(isLoggedIn) {
   if (isLoggedIn && currentUser) {
     const segName = currentUser.segment ? currentUser.segment.toUpperCase() : 'NOT SET';
     const roleBadge = isAdmin ? '<span class="u-role-admin">🛡️ ADMIN</span>' : '<span class="u-role-client">👤 CLIENT</span>';
+    const displayName = currentUser.full_name || currentUser.email || 'User';
 
     container.innerHTML = `
       ${roleBadge}
-      <span class="u-name">${esc(currentUser.full_name || currentUser.email)}</span>
-      <span class="u-seg" onclick="openPersonaModal(false)">🎯 Goal: <b>${segName}</b> ✏️</span>
-      ${isAdmin ? '<button class="u-btn-add-prop" onclick="openAdminAddPropertyModal()">➕ Add Property</button>' : ''}
+      <span class="u-name" title="${esc(displayName)}">${esc(displayName)}</span>
+      <span class="u-seg" onclick="openPersonaModal(false)" title="Change segment">🎯 <b>${esc(segName)}</b> ✏️</span>
+      ${isAdmin ? '<button class="u-btn-add-prop" onclick="openAdminAddPropertyModal()">➕ Add</button>' : ''}
       <button class="u-btn-logout" onclick="handleLogout()">🚪 Logout</button>
     `;
   } else {
@@ -97,7 +109,7 @@ function renderUserHeaderBadge(isLoggedIn) {
       <button class="u-btn-login" onclick="openAuthModal('login')">🔑 Sign In</button>
       <button class="u-btn-google" onclick="handleGoogleAuth()">
         <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-        Continue with Google
+        Google Sign In
       </button>
     `;
   }
@@ -591,22 +603,77 @@ async function saveUserPersona(segmentKey) {
 function injectAuthStyles() {
   const style = document.createElement('style');
   style.textContent = `
-    .user-auth-badge {
-      display: flex; align-items: center; gap: 0.6rem; margin-left: auto; font-size: 0.8rem;
+    .top-nav {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 0.85rem !important;
+      padding: 0.65rem 1.25rem !important;
+      background: rgba(15, 23, 42, 0.9) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1000 !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
-    .u-name { font-weight: 700; color: #fff; }
+    .top-nav-links {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.45rem !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      flex: 1 !important;
+      min-width: 0 !important;
+      padding: 2px 0 !important;
+    }
+    .top-nav-links::-webkit-scrollbar { display: none !important; }
+    .top-nav-links a {
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      background: rgba(16, 185, 129, 0.12) !important;
+      color: #10b981 !important;
+      border: 1px solid rgba(16, 185, 129, 0.3) !important;
+      padding: 0.42rem 0.9rem !important;
+      border-radius: 30px !important;
+      text-decoration: none !important;
+      font-weight: 700 !important;
+      font-size: 0.8rem !important;
+      transition: all 0.2s ease !important;
+    }
+    .top-nav-links a:hover, .top-nav-links a.active {
+      background: #10b981 !important;
+      color: #042f2e !important;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.35) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    .user-auth-badge {
+      display: flex; align-items: center; gap: 0.5rem; margin-left: auto; font-size: 0.8rem; flex-shrink: 0;
+    }
+    .u-name {
+      font-weight: 700; color: #fff; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem;
+    }
     .u-seg {
       background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);
-      padding: 0.3rem 0.7rem; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;
+      padding: 0.25rem 0.65rem; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;
+      white-space: nowrap; font-size: 0.74rem; font-weight: 700;
     }
     .u-seg:hover { background: rgba(168, 85, 247, 0.3); }
     .u-btn-login, .u-btn-logout {
       background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15);
-      padding: 0.35rem 0.8rem; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 0.78rem;
+      padding: 0.3rem 0.75rem; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 0.75rem;
+      white-space: nowrap; transition: all 0.2s ease;
     }
+    .u-btn-logout:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5; }
     .u-btn-google {
-      background: #ffffff; color: #1e293b; border: none; padding: 0.35rem 0.85rem; border-radius: 20px;
-      font-weight: 700; cursor: pointer; font-size: 0.78rem; display: flex; align-items: center; gap: 0.4rem;
+      background: #ffffff; color: #1e293b; border: none; padding: 0.3rem 0.75rem; border-radius: 20px;
+      font-weight: 700; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; gap: 0.4rem;
+      white-space: nowrap;
     }
 
     .personalized-banner {
@@ -629,8 +696,11 @@ function injectAuthStyles() {
     .p-banner-badge { font-size: 0.7rem; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.15rem; }
     .p-banner-badge span { color: #38bdf8; }
     .p-banner-title { font-weight: 800; font-size: 1.05rem; color: #fff; line-height: 1.3; }
-    .p-banner-sub { font-size: 0.88rem; color: #cbd5e1; margin-top: 0.35rem; text-align: center; width: 100%; }
-    .p-sub-title { color: #38bdf8; font-weight: 600; text-align: center; display: block; line-height: 1.5; letter-spacing: 0.3px; text-shadow: 0 0 10px rgba(56,189,248,0.15); }
+    .p-banner-sub { font-size: 0.88rem; color: #cbd5e1; margin-top: 0.25rem; text-align: left; width: 100%; }
+    .p-sub-title {
+      color: #38bdf8; font-weight: 600; text-align: left; display: block; line-height: 1.5; font-size: 0.88rem;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
     .p-sub-price { color: #10b981; font-weight: 800; }
     .p-banner-right { display: flex; align-items: center; gap: 0.75rem; }
     .p-banner-btn-primary {
@@ -780,6 +850,26 @@ function injectAuthStyles() {
 
     /* ── MOBILE: Auth & Persona Modals ─────────────────────────── */
     @media (max-width: 768px) {
+      /* Top Nav & User Badge 2-row layout on mobile/tablet */
+      .top-nav {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 0.55rem 0.85rem !important;
+        gap: 0.5rem !important;
+      }
+      .user-auth-badge {
+        width: 100% !important;
+        justify-content: space-between !important;
+        order: 1 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        padding-bottom: 0.45rem !important;
+        margin-left: 0 !important;
+      }
+      .top-nav-links {
+        width: 100% !important;
+        order: 2 !important;
+      }
+
       /* Auth modal: edge-to-edge with top margin */
       .auth-modal-overlay {
         align-items: flex-end;
@@ -832,6 +922,7 @@ function injectAuthStyles() {
     }
 
     @media (max-width: 480px) {
+      .u-name { max-width: 85px; }
       .auth-modal-card { padding: 1.5rem 1rem 1.75rem; }
 
       /* Persona grid: single column on very small */
