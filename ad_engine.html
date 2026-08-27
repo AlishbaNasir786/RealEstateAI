@@ -221,6 +221,23 @@
       background: #075e54; border-radius: 14px; border-top-left-radius: 0; padding: 1rem;
       color: #e2e8f0; font-size: 0.88rem; line-height: 1.6; border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
+    /* ── MOBILE ────────────────────────────────────────── */
+    @media(max-width:900px){
+      .layout-grid{grid-template-columns:1fr!important;}
+      .preview-col{position:static!important;}
+    }
+    @media(max-width:768px){
+      .top-nav{overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;gap:.5rem;padding:.85rem .75rem;}
+      .top-nav a{white-space:nowrap;flex-shrink:0;padding:.45rem .9rem;font-size:.78rem;}
+      .page-wrap{padding:1.25rem .85rem;}
+      h1,.page-title{font-size:1.6rem;}
+      .card{padding:1.25rem 1rem;}
+    }
+    @media(max-width:480px){
+      h1,.page-title{font-size:1.3rem;}
+      .card{padding:1rem .85rem;}
+    }
   </style>
 </head>
 <body>

@@ -96,6 +96,19 @@
   .doc-badge.pdf{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--red, #f87171);}
   .doc-badge.text{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);color:var(--blue);}
   .doc-badge.chunks{background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.3);color:var(--muted);}
+
+  /* ── MOBILE ─────────────────────────────────────────── */
+  @media(max-width:768px){
+    .top-nav{overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;gap:.5rem;padding:.85rem .75rem;}
+    .top-nav a{white-space:nowrap;flex-shrink:0;padding:.45rem .9rem;font-size:.78rem;}
+    .container{padding:1.5rem .85rem;}
+    h1{font-size:1.7rem;}
+    .grid-2c{grid-template-columns:1fr!important;}
+  }
+  @media(max-width:480px){
+    h1{font-size:1.3rem;}
+    body{padding:0 0 2rem;}
+  }
 </style>
 </head>
 <body>

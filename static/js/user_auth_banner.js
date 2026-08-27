@@ -776,6 +776,75 @@ function injectAuthStyles() {
       display: flex; align-items: center; gap: 0.6rem; white-space: nowrap;
     }
     @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+
+    /* ── MOBILE: Auth & Persona Modals ─────────────────────────── */
+    @media (max-width: 768px) {
+      /* Auth modal: edge-to-edge with top margin */
+      .auth-modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+      }
+      .auth-modal-card {
+        border-radius: 24px 24px 0 0;
+        max-width: 100%;
+        width: 100%;
+        padding: 1.8rem 1.25rem 2rem;
+        max-height: 92vh;
+        margin: 0;
+      }
+
+      /* Persona modal: full-screen scroll */
+      .persona-modal-card {
+        border-radius: 20px 20px 0 0;
+        max-width: 100%;
+        padding: 1.6rem 1rem 2rem;
+        max-height: 92vh;
+        margin: 0;
+      }
+
+      /* Persona grid: 2 columns on mobile */
+      .p-modal-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+      .p-modal-title { font-size: 1.35rem; }
+      .p-modal-sub { font-size: 0.8rem; margin-bottom: 1rem; }
+
+      /* Personalized banner: stack vertically */
+      .personalized-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        margin: 0.75rem 0.75rem 0.5rem;
+        padding: 0.85rem 1rem;
+        gap: 0.75rem;
+      }
+      .p-banner-left { min-width: 0; width: 100%; }
+      .p-banner-right {
+        width: 100%;
+        justify-content: flex-end;
+      }
+      .p-banner-title { font-size: 0.9rem; }
+      .p-banner-sub { font-size: 0.78rem; text-align: left; }
+    }
+
+    @media (max-width: 480px) {
+      .auth-modal-card { padding: 1.5rem 1rem 1.75rem; }
+
+      /* Persona grid: single column on very small */
+      .p-modal-grid { grid-template-columns: 1fr; gap: 0.6rem; }
+      .p-modal-item { padding: 0.85rem; }
+      .p-m-icon { font-size: 1.6rem; }
+
+      /* Auth badge: hide secondary info */
+      .u-seg { display: none; }
+      .u-role-admin, .u-role-client { font-size: 0.65rem; padding: 0.2rem 0.5rem; }
+
+      /* Google fallback card: full width */
+      .gf-card { padding: 1.75rem 1.25rem; border-radius: 16px 16px 0 0; }
+
+      /* Access toast: max width */
+      .access-toast { white-space: normal; text-align: center; width: 90%; max-width: 340px; }
+    }
   `;
   document.head.appendChild(style);
 }
