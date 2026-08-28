@@ -33,8 +33,14 @@ async function initAuthAndBanner() {
     } else {
       renderUserHeaderBadge(false);
       loadPersonalizedBanner();
-      // Always open login modal first on initial unauthenticated visit
-      openAuthModal('login');
+      // Only auto-open login modal on the home/listing page, NOT on admin tool pages
+      // (admin tools use server-side @admin_required which redirects with ?access=denied)
+      const adminPages = ['/competitor', '/marketing_report', '/chat_assistant',
+                          '/brand_memory', '/ad_engine', '/persona'];
+      const isAdminPage = adminPages.some(p => window.location.pathname.startsWith(p));
+      if (!isAdminPage) {
+        openAuthModal('login');
+      }
     }
   } catch (err) {
     console.error('Error initializing auth:', err);
