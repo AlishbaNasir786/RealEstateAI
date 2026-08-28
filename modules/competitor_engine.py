@@ -740,6 +740,17 @@ def generate_competitor_report(listings: list) -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    # ── Environment detection ────────────────────────────────────────────
+    _THIS_DIR  = os.path.dirname(os.path.abspath(__file__))
+    _ON_VERCEL = bool(os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV'))
+
+    # On Vercel the filesystem is read-only; only /tmp/ is writable.
+    # Zameen also blocks cloud-provider IPs (403), so skip live scrape
+    # and go straight to the committed CSV dataset.
+    _CSV_OUT = '/tmp/zameen_listings.csv'      if _ON_VERCEL else 'data/zameen_listings.csv'
+    _RPT_OUT = '/tmp/competitor_report.html'   if _ON_VERCEL else 'data/competitor_report.html'
+    _TXT_OUT = '/tmp/competitor_report.txt'    if _ON_VERCEL else 'data/competitor_report.txt'
+
     # Verified location IDs from Zameen URL scheme:
     # zameen.com/{Category}/{City}-{loc_id}-{page}.html
     LOCATION_IDS = {
@@ -756,65 +767,64 @@ if __name__ == "__main__":
     CATEGORIES = {
         "Houses":  "Houses_Property",
         "Flats":   "Flats_Property",
-        # NOTE: "Plots_Property" URLs on Zameen appear to return the same listings
-        # as Houses_Property (the category filter is applied client-side via JS,
-        # not server-side). Including it produces duplicate/mislabelled data.
-        # Re-enable only if you confirm the URL returns actual plot listings.
-        # "Plots":   "Plots_Property",
     }
 
     all_listings = []
-    total_combos = len(CATEGORIES) * len(LOCATION_IDS)
-    combo_idx = 0
 
-    for cat_label, cat_slug in CATEGORIES.items():
-        for city, loc_id in LOCATION_IDS.items():
-            combo_idx += 1
-            pct = min(80.0, round((combo_idx / total_combos) * 80.0, 1))
-            city_label = f"{cat_label}_{city}"
-            base_url   = f"https://www.zameen.com/{cat_slug}/{city}-{loc_id}-{{}}.html"
-
-            print(f"\n{pct:.1f}% -- Scraping Zameen.com ({city_label})...", flush=True)
-            print(f"{'='*55}", flush=True)
-
-            consecutive_empty = 0
-
-            for page in range(1, 11):
-                url = base_url.format(page)
-                print(f"\n  Page {page}:", flush=True)
-                listings = scrape_zameen(url, city_label)
-
-                if not listings:
-                    consecutive_empty += 1
-                    if consecutive_empty >= 2:
-                        print(f"  2 empty pages in a row -- stopping {city_label}", flush=True)
-                        break
-                else:
-                    consecutive_empty = 0
-                    all_listings.extend(listings)
-
-                # Polite delay -- randomised to avoid rate-limiting
-                time.sleep(random.uniform(2.5, 5.0))
-
-    print(f"\n85.0% -- Processing collected listings...", flush=True)
-
-    if not all_listings:
-        print("  Live scrape returned no listings. Loading repository dataset...", flush=True)
+    if _ON_VERCEL:
+        # ── Vercel: skip live scrape — load from committed CSV directly ────────
+        print("Cloud env detected — loading repository dataset (live scrape skipped).", flush=True)
+        print("\n85.0% -- Loading repository dataset...", flush=True)
         all_listings = load_fallback_listings()
+    else:
+        # ── Local dev: full live scrape ────────────────────────────────────────
+        total_combos = len(CATEGORIES) * len(LOCATION_IDS)
+        combo_idx = 0
+
+        for cat_label, cat_slug in CATEGORIES.items():
+            for city, loc_id in LOCATION_IDS.items():
+                combo_idx += 1
+                pct = min(80.0, round((combo_idx / total_combos) * 80.0, 1))
+                city_label = f"{cat_label}_{city}"
+                base_url   = f"https://www.zameen.com/{cat_slug}/{city}-{loc_id}-{{}}.html"
+
+                print(f"\n{pct:.1f}% -- Scraping Zameen.com ({city_label})...", flush=True)
+                print(f"{'='*55}", flush=True)
+
+                consecutive_empty = 0
+
+                for page in range(1, 11):
+                    url = base_url.format(page)
+                    print(f"\n  Page {page}:", flush=True)
+                    listings = scrape_zameen(url, city_label)
+
+                    if not listings:
+                        consecutive_empty += 1
+                        if consecutive_empty >= 2:
+                            print(f"  2 empty pages in a row -- stopping {city_label}", flush=True)
+                            break
+                    else:
+                        consecutive_empty = 0
+                        all_listings.extend(listings)
+
+                    time.sleep(random.uniform(2.5, 5.0))
+
+        print(f"\n85.0% -- Processing collected listings...", flush=True)
+
+        if not all_listings:
+            print("  Live scrape returned no listings. Loading repository dataset...", flush=True)
+            all_listings = load_fallback_listings()
 
     print(f"\n{'='*55}", flush=True)
     print(f"  TOTAL LISTINGS COLLECTED (raw): {len(all_listings):,}", flush=True)
     print(f"{'='*55}", flush=True)
 
     if not all_listings:
-        print("No listings collected. Check network or data directory.", flush=True)
+        print("No listings collected and no fallback CSV found. Cannot generate report.", flush=True)
         sys.exit(1)
 
     # ------------------------------------------------------------------
-    # Deduplicate on URL before any analysis
-    # Zameen serves the same listing across multiple category pages
-    # (e.g. a house appears in both Houses_Islamabad and Plots_Islamabad).
-    # Keeping duplicates inflates every count in the report.
+    # Deduplicate on URL
     # ------------------------------------------------------------------
     print(f"\n90.0% -- Deduplicating listings...", flush=True)
     seen_urls = set()
@@ -831,8 +841,11 @@ if __name__ == "__main__":
 
     all_listings = deduped
 
-    # Persist raw data
-    save_to_csv(all_listings)
+    # Persist raw data to writable path
+    try:
+        save_to_csv(all_listings, filename=_CSV_OUT)
+    except Exception as _csv_err:
+        print(f"Warning: could not save CSV: {_csv_err}", flush=True)
 
     # Deep analytics
     print(f"\n95.0% -- Generating deep competitor analytics...", flush=True)
@@ -840,8 +853,15 @@ if __name__ == "__main__":
 
     # Generate reports
     print(f"\n98.0% -- Rendering executive HTML reports...", flush=True)
-    from report_generator import CompetitorReport
-    rpt = CompetitorReport(all_listings, report_data)
-    rpt.generate_all_reports()
+    try:
+        from report_generator import CompetitorReport
+        rpt = CompetitorReport(all_listings, report_data)
+        rpt.generate_html_report(filename=_RPT_OUT)
+        rpt.generate_text_report(filename=_TXT_OUT)
+    except Exception as _rpt_err:
+        import traceback
+        print(f"Report generation failed: {_rpt_err}", flush=True)
+        print(traceback.format_exc(), flush=True)
+        sys.exit(1)
 
     print(f"\n100.0% -- Competitor Intelligence Analysis Complete!", flush=True)

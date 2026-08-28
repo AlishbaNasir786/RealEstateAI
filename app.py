@@ -229,15 +229,23 @@ def run_engine():
                             output_q.put(text.rstrip('\r\n'))
                         return len(text)
                 sys.stdout = _LineCapture()
+
+                modules_dir = os.path.abspath('modules')
+                old_syspath = sys.path[:]
+                # Inject modules/ into sys.path so `from report_generator import ...`
+                # resolves correctly when competitor_engine.py is exec'd in-process.
+                if modules_dir not in sys.path:
+                    sys.path.insert(0, modules_dir)
+
                 try:
-                    # Load competitor_engine as a module without re-importing cached version
+                    # IMPORTANT: load as '__main__' so the `if __name__ == '__main__':` block runs
                     spec = importlib.util.spec_from_file_location(
-                        "competitor_engine",
-                        os.path.abspath(os.path.join('modules', 'competitor_engine.py'))
+                        "__main__",
+                        os.path.join(modules_dir, 'competitor_engine.py')
                     )
                     mod = importlib.util.module_from_spec(spec)
                     old_cwd = os.getcwd()
-                    os.chdir(os.path.abspath('modules'))
+                    os.chdir(modules_dir)
                     try:
                         spec.loader.exec_module(mod)
                     finally:
@@ -245,9 +253,12 @@ def run_engine():
                 except SystemExit:
                     pass  # competitor_engine calls sys.exit(1) on failure — safe to swallow
                 except Exception as exc:
+                    import traceback
                     output_q.put(f"ERROR: {exc}")
+                    output_q.put(f"TRACEBACK: {traceback.format_exc()}")
                 finally:
                     sys.stdout = old_stdout
+                    sys.path = old_syspath   # restore sys.path
                     output_q.put(None)  # sentinel
 
             t = threading.Thread(target=_run_engine_in_thread, daemon=True)
