@@ -210,7 +210,6 @@ def ad_engine():
     return send_from_directory('.', 'ad_engine.html')
 
 @app.route('/persona')
-@admin_required
 def persona_page():
     return send_from_directory('.', 'persona_app.html')
 

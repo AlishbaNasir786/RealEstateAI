@@ -37,7 +37,7 @@ async function initAuthAndBanner() {
       // After the user closes it (without logging in), it won't reappear
       // until they log out (which resets the flag) or open a new browser session.
       const adminPages = ['/competitor', '/marketing_report', '/chat_assistant',
-                          '/brand_memory', '/ad_engine', '/persona'];
+                          '/brand_memory', '/ad_engine'];
       const isAdminPage = adminPages.some(p => window.location.pathname.startsWith(p));
       const alreadyShown = sessionStorage.getItem('auth_modal_shown');
       if (!isAdminPage && !alreadyShown) {

@@ -451,11 +451,12 @@ def submit_listing_review(property_id: str, reviewer_name: str, rating: int, com
         # Best-effort sync to Supabase reviews table
         try:
             from db import supabase
-            sb_payload = {
-                "rating": rating,
-                "comment": f"[{reviewer_name.strip()[:80]}]: {comment.strip()[:1000]}",
-            }
-            supabase.table('reviews').insert(sb_payload).execute()
+            if supabase is not None:
+                sb_payload = {
+                    "rating": rating,
+                    "comment": f"[{reviewer_name.strip()[:80]}]: {comment.strip()[:1000]}",
+                }
+                supabase.table('reviews').insert(sb_payload).execute()
         except Exception:
             pass
 
@@ -467,14 +468,31 @@ def submit_listing_review(property_id: str, reviewer_name: str, rating: int, com
 
 def get_listing_reviews(property_id: str) -> list:
     """Return all reviews for a specific property, newest first."""
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM listing_reviews WHERE property_id=? ORDER BY created_at DESC",
-              (property_id,))
-    rows = [dict(r) for r in c.fetchall()]
-    conn.close()
-    return rows
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT * FROM listing_reviews WHERE property_id=? ORDER BY created_at DESC",
+                  (property_id,))
+        rows = [dict(r) for r in c.fetchall()]
+        conn.close()
+        return rows
+    except Exception:
+        return []
+
+
+def get_all_local_reviews() -> list:
+    """Return all reviews across all listings, newest first."""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT * FROM listing_reviews ORDER BY created_at DESC")
+        rows = [dict(r) for r in c.fetchall()]
+        conn.close()
+        return rows
+    except Exception:
+        return []
 
 
 def get_all_listing_engagement() -> dict:

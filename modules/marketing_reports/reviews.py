@@ -108,21 +108,36 @@ def _extract_keywords(text: str, top_n: int = 10) -> list:
 
 def get_reviews(days: int = 90) -> list:
     """
-    Fetch reviews from Supabase posted in the last `days` days.
+    Fetch reviews from Supabase posted in the last `days` days, merged with local reviews.
     Returns list of review dicts with an added `sentiment` field.
-    Schema: id, agent_id, user_id, rating, comment, created_at
     """
-    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    reviews = []
+    if supabase is not None:
+        since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        try:
+            res = supabase.table('reviews') \
+                .select('id, agent_id, user_id, rating, comment, created_at') \
+                .gte('created_at', since) \
+                .order('created_at', desc=True) \
+                .execute()
+            reviews = res.data or []
+        except Exception as e:
+            print(f"[reviews] Supabase fetch error: {e}")
+            reviews = []
+
+    # Merge local reviews
     try:
-        res = supabase.table('reviews') \
-            .select('id, agent_id, user_id, rating, comment, created_at') \
-            .gte('created_at', since) \
-            .order('created_at', desc=True) \
-            .execute()
-        reviews = res.data or []
-    except Exception as e:
-        print(f"[reviews] Supabase fetch error: {e}")
-        reviews = []
+        from auth_db import get_all_local_reviews
+        local_revs = get_all_local_reviews()
+        for lr in local_revs:
+            reviews.append({
+                'id': lr.get('id'),
+                'rating': lr.get('rating', 5),
+                'comment': f"[{lr.get('reviewer_name') or 'Client'}]: {lr.get('comment') or ''}",
+                'created_at': lr.get('created_at')
+            })
+    except Exception:
+        pass
 
     # Enrich with local sentiment + display name fallback
     for r in reviews:
@@ -138,15 +153,31 @@ def get_reviews(days: int = 90) -> list:
 
 def get_all_reviews() -> list:
     """Fetch every review ever submitted (no date filter)."""
+    reviews = []
+    if supabase is not None:
+        try:
+            res = supabase.table('reviews') \
+                .select('id, agent_id, user_id, rating, comment, created_at') \
+                .order('created_at', desc=True) \
+                .execute()
+            reviews = res.data or []
+        except Exception as e:
+            print(f"[reviews] Supabase fetch error: {e}")
+            reviews = []
+
+    # Merge local reviews
     try:
-        res = supabase.table('reviews') \
-            .select('id, agent_id, user_id, rating, comment, created_at') \
-            .order('created_at', desc=True) \
-            .execute()
-        reviews = res.data or []
-    except Exception as e:
-        print(f"[reviews] Supabase fetch error: {e}")
-        reviews = []
+        from auth_db import get_all_local_reviews
+        local_revs = get_all_local_reviews()
+        for lr in local_revs:
+            reviews.append({
+                'id': lr.get('id'),
+                'rating': lr.get('rating', 5),
+                'comment': f"[{lr.get('reviewer_name') or 'Client'}]: {lr.get('comment') or ''}",
+                'created_at': lr.get('created_at')
+            })
+    except Exception:
+        pass
 
     for r in reviews:
         raw_comment = r.get('comment', '')
@@ -162,30 +193,40 @@ def get_all_reviews() -> list:
 def submit_review(reviewer_name: str, rating: int, comment: str,
                   source: str = 'website', property_id: str = None) -> dict:
     """
-    Insert a new review into the Supabase `reviews` table.
-    Actual schema: id, agent_id, user_id, rating, comment, created_at
-    reviewer_name is stored in the comment prefix since no dedicated column exists.
-    Returns the inserted record or an error dict.
+    Insert a new review into Supabase `reviews` (if connected) and local SQLite.
+    Returns the inserted record or dict.
     """
     rating = max(1, min(5, int(rating)))
-    name   = reviewer_name.strip()[:80]
-    body   = comment.strip()[:1900]
-    # Store name inline in comment as "[Name]: comment" since schema has no name col
+    name   = (reviewer_name or 'Client').strip()[:80]
+    body   = (comment or '').strip()[:1900]
     full_comment = f"[{name}]: {body}"
 
-    payload = {
-        "rating":  rating,
-        "comment": full_comment,
-    }
-
+    # Always persist locally to SQLite
     try:
-        res = supabase.table('reviews').insert(payload).execute()
-        inserted = res.data[0] if res.data else {}
-        # Parse name back out for the response
-        inserted['reviewer_name'] = name
-        return {"success": True, "data": inserted}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+        from auth_db import submit_listing_review
+        submit_listing_review(
+            property_id=property_id or 'general',
+            reviewer_name=name,
+            rating=rating,
+            comment=body
+        )
+    except Exception:
+        pass
+
+    if supabase is not None:
+        payload = {
+            "rating":  rating,
+            "comment": full_comment,
+        }
+        try:
+            res = supabase.table('reviews').insert(payload).execute()
+            inserted = res.data[0] if res.data else {}
+            inserted['reviewer_name'] = name
+            return {"success": True, "data": inserted}
+        except Exception as e:
+            pass
+
+    return {"success": True, "data": {"reviewer_name": name, "rating": rating, "comment": body}}
 
 
 def _parse_name_from_comment(comment: str) -> tuple:

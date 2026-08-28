@@ -200,8 +200,11 @@ def get_personalized_banner():
 def _get_matching_listing_for_segment(segment: str) -> dict:
     """Fetch matching real estate listing from DB based on persona priorities."""
     try:
-        res = supabase.table('properties').select('*').limit(10).execute()
-        props = res.data or []
+        if supabase is not None:
+            res = supabase.table('properties').select('*').limit(10).execute()
+            props = res.data or []
+        else:
+            props = []
     except Exception:
         props = []
 
