@@ -68,17 +68,23 @@ function renderUserHeaderBadge(isLoggedIn) {
 
   // Enforce Admin-Only Nav Links:
   // - Admins: show all nav links
-  // - Clients/guests: fully HIDE admin-only links (not just CSS hidden)
+  // - Clients/guests: fully HIDE admin-only links (competitor, marketing reports, ad engine, chat assistant, brand memory)
   const isAdmin = isLoggedIn && currentUser && currentUser.role === 'admin';
-  nav.querySelectorAll('[data-admin-only]').forEach(link => {
-    if (isAdmin) {
-      link.style.display = '';
-      link.removeAttribute('aria-hidden');
-      link.removeAttribute('tabindex');
-    } else {
-      link.style.display = 'none';
-      link.setAttribute('aria-hidden', 'true');
-      link.setAttribute('tabindex', '-1');
+  const adminUrls = ['/competitor', '/marketing_report', '/ad_engine', '/chat_assistant', '/brand_memory'];
+
+  nav.querySelectorAll('a').forEach(link => {
+    const href = link.getAttribute('href') || '';
+    const isAdminLink = link.hasAttribute('data-admin-only') || adminUrls.some(u => href.startsWith(u) || href.includes(u));
+    if (isAdminLink) {
+      if (isAdmin) {
+        link.style.display = '';
+        link.removeAttribute('aria-hidden');
+        link.removeAttribute('tabindex');
+      } else {
+        link.style.setProperty('display', 'none', 'important');
+        link.setAttribute('aria-hidden', 'true');
+        link.setAttribute('tabindex', '-1');
+      }
     }
   });
 

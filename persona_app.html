@@ -829,17 +829,15 @@
 
 <body>
 
-  <!-- Cross-page navigation (isolated inline styles so it doesn't clash with this page's own CSS) -->
-  <nav style="display:flex;justify-content:center;gap:.7rem;padding:.6rem 1rem;flex-wrap:wrap;
-              background:rgba(15,23,42,.85);backdrop-filter:blur(20px);
-              border-bottom:1px solid rgba(255,255,255,.08);font-family:'Plus Jakarta Sans','Inter',sans-serif;">
-    <a href="/persona" style="background:#10b981;color:#042f2e;padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🤖 Persona &amp; WhatsApp</a>
-    <a href="/competitor" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">📊 Competitor Engine</a>
-    <a href="/marketing_report" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">📈 Marketing Reports</a>
-    <a href="/ad_engine" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🎯 Ad Engine</a>
-    <a href="/chat_assistant" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">💬 Chat Assistant</a>
-    <a href="/brand_memory" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🧠 Brand Memory</a>
-    <a href="/" style="background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.25);padding:.4rem .9rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.8rem;">🏠 Home (Listings)</a>
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <a href="/persona" class="active">🤖 Persona &amp; WhatsApp</a>
+    <a href="/competitor" data-admin-only>📊 Competitor Engine</a>
+    <a href="/marketing_report" data-admin-only>📈 Marketing Reports</a>
+    <a href="/ad_engine" data-admin-only>🎯 Ad Engine</a>
+    <a href="/chat_assistant" data-admin-only>💬 Chat Assistant</a>
+    <a href="/brand_memory" data-admin-only>🧠 Brand Memory</a>
+    <a href="/">🏠 Home (Listings)</a>
   </nav>
 
   <div class="container">
