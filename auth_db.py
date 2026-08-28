@@ -254,28 +254,62 @@ def create_user(email: str, password: str = None, full_name: str = "",
 
 def get_user_by_email(email: str) -> dict:
     """Retrieve user by email."""
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE email = ?", (email.lower().strip(),))
-    row = c.fetchone()
-    conn.close()
-    return dict(row) if row else None
+    if not email:
+        return None
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE email = ?", (email.lower().strip(),))
+        row = c.fetchone()
+        conn.close()
+        return dict(row) if row else None
+    except sqlite3.OperationalError:
+        init_auth_db()
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            conn.row_factory = sqlite3.Row
+            c = conn.cursor()
+            c.execute("SELECT * FROM users WHERE email = ?", (email.lower().strip(),))
+            row = c.fetchone()
+            conn.close()
+            return dict(row) if row else None
+        except Exception:
+            return None
 
 
 def get_user_by_id(user_id: str) -> dict:
     """Retrieve user by UUID (excludes password_hash)."""
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("""
-        SELECT id, email, full_name, phone, auth_provider, google_id,
-               email_verified, segment, role, created_at, last_login_at
-        FROM users WHERE id = ?
-    """, (user_id,))
-    row = c.fetchone()
-    conn.close()
-    return dict(row) if row else None
+    if not user_id:
+        return None
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("""
+            SELECT id, email, full_name, phone, auth_provider, google_id,
+                   email_verified, segment, role, created_at, last_login_at
+            FROM users WHERE id = ?
+        """, (user_id,))
+        row = c.fetchone()
+        conn.close()
+        return dict(row) if row else None
+    except sqlite3.OperationalError:
+        init_auth_db()
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            conn.row_factory = sqlite3.Row
+            c = conn.cursor()
+            c.execute("""
+                SELECT id, email, full_name, phone, auth_provider, google_id,
+                       email_verified, segment, role, created_at, last_login_at
+                FROM users WHERE id = ?
+            """, (user_id,))
+            row = c.fetchone()
+            conn.close()
+            return dict(row) if row else None
+        except Exception:
+            return None
 
 
 def update_user_phone(user_id: str, phone: str) -> dict:

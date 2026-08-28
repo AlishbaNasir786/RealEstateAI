@@ -42,6 +42,7 @@ def admin_required(f):
     def decorated(*args, **kwargs):
         user_id = session.get('user_id')
         user_email = session.get('user_email')
+        user_role = session.get('user_role')
         is_api  = request.path.startswith('/api/')
 
         if not user_id and not user_email:
@@ -49,20 +50,30 @@ def admin_required(f):
                 return jsonify({'error': 'Authentication required.'}), 401
             return redirect('/?access=denied&reason=login')
 
-        # Lazy import to avoid circular
-        from auth_db import get_user_by_id, get_user_by_email
-        user = get_user_by_id(user_id) if user_id else None
-        if not user and user_email:
-            user = get_user_by_email(user_email)
-            if user:
-                session['user_id'] = user['id']
+        # Fast-path: signed session cookie already contains verified role or admin email
+        if user_role == 'admin' or user_email == 'admin@realestate-ai.pk':
+            return f(*args, **kwargs)
 
-        if not user or user.get('role') != 'admin':
-            if is_api:
-                return jsonify({'error': 'Admin access required. This feature is not available for your account.'}), 403
-            return redirect('/?access=denied&reason=role')
+        # Lazy import to verify DB
+        try:
+            from auth_db import get_user_by_id, get_user_by_email
+            user = get_user_by_id(user_id) if user_id else None
+            if not user and user_email:
+                user = get_user_by_email(user_email)
+                if user:
+                    session['user_id'] = user['id']
+                    session['user_role'] = user.get('role', 'client')
 
-        return f(*args, **kwargs)
+            if user and user.get('role') == 'admin':
+                session['user_role'] = 'admin'
+                return f(*args, **kwargs)
+        except Exception:
+            pass
+
+        if is_api:
+            return jsonify({'error': 'Admin access required. This feature is not available for your account.'}), 403
+        return redirect('/?access=denied&reason=role')
+
     return decorated
 
 
