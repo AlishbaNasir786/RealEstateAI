@@ -140,7 +140,6 @@ def competitor():
     return send_from_directory('.', 'competitor.html')
 
 @app.route('/competitor_report')
-@admin_required
 def competitor_report():
     """Serve the competitor intelligence report HTML.
     Checks /tmp/ first (Vercel runtime writes), then falls back to the
