@@ -451,8 +451,25 @@ def _save_map(m):
 
 @app.route('/api/property_images', methods=['GET'])
 def get_property_images():
-    """Return the property_id → image_url mapping."""
-    return jsonify(_load_map())
+    """Return the property_id -> image_url mapping."""
+    img_map = _load_map()
+    if supabase is not None:
+        try:
+            res = supabase.table('property_images').select('property_id, url').order('sort_order').execute()
+            if res.data:
+                for row in res.data:
+                    pid = str(row.get('property_id', ''))
+                    url = row.get('url', '')
+                    if pid and url:
+                        if pid not in img_map:
+                            img_map[pid] = []
+                        if isinstance(img_map[pid], str):
+                            img_map[pid] = [img_map[pid]]
+                        if url not in img_map[pid]:
+                            img_map[pid].append(url)
+        except Exception:
+            pass
+    return jsonify(img_map)
 
 @app.route('/api/upload_image', methods=['POST'])
 def upload_image():

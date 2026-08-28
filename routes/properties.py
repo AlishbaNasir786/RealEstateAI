@@ -258,7 +258,7 @@ def get_home_inventory():
             except Exception:
                 pass
 
-            response = supabase.table('properties').select('*').execute()
+            response = supabase.table('properties').select('*').order('created_at', desc=True).execute()
             props = response.data or []
 
             isb_keywords = ['islamabad', 'f-6', 'f-7', 'f-8', 'f-10', 'f-11', 'e-11', 'g-9', 'g-10', 'g-11', 'g-13', 'dha', 'bahria', 'b-17', 'blue area']
@@ -270,8 +270,29 @@ def get_home_inventory():
                 txt = f"{p.get('address') or ''} {p.get('city') or ''} {p.get('location') or ''} {p.get('title') or ''}".lower()
                 if any(k in txt for k in isb_keywords) and not any(other in txt for other in ['lahore', 'karachi', 'rawalpindi', 'peshawar', 'multan']):
                     remote_props.append(p)
-        except Exception:
-            pass
+
+            # Join image URLs from property_images table
+            if remote_props:
+                prop_ids = [p['id'] for p in remote_props if 'id' in p]
+                try:
+                    img_res = supabase.table('property_images').select('property_id, url, sort_order').in_('property_id', prop_ids).order('sort_order').execute()
+                    img_map = {}
+                    for row in (img_res.data or []):
+                        pid = str(row.get('property_id', ''))
+                        u = row.get('url', '')
+                        if pid and u:
+                            if pid not in img_map:
+                                img_map[pid] = []
+                            img_map[pid].append(u)
+                    for p in remote_props:
+                        pid = str(p.get('id', ''))
+                        if pid in img_map and not p.get('image_url'):
+                            p['image_url'] = img_map[pid][0]
+                            p['gallery'] = json.dumps(img_map[pid])
+                except Exception as img_fetch_err:
+                    print(f"Warning fetching property images: {img_fetch_err}")
+        except Exception as sup_fetch_err:
+            print(f"Warning fetching Supabase properties: {sup_fetch_err}")
 
     result = _dedup_merge(local_props, remote_props, ISLAMABAD_FALLBACK)
 
@@ -334,8 +355,9 @@ def add_property():
     except Exception:
         amenities = []
 
+    prop_id = str(uuid.uuid4())
     data = {
-        'id': str(uuid.uuid4()),
+        'id': prop_id,
         'title': request.form.get('title', '').strip(),
         'address': f"{sector}, Islamabad" if sector else request.form.get('address', 'Islamabad').strip(),
         'sector': sector,
@@ -372,7 +394,7 @@ def add_property():
                     uploaded_images.append(data_uri)
                     # Also write to UPLOAD_FOLDER as backup
                     try:
-                        filename = f"property_{data['id']}_{i}.{ext}"
+                        filename = f"property_{prop_id}_{i}.{ext}"
                         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
                         with open(os.path.join(UPLOAD_FOLDER, filename), 'wb') as f:
                             f.write(file_bytes)
@@ -384,15 +406,61 @@ def add_property():
     data['image_url'] = uploaded_images[0] if uploaded_images else None
     data['gallery'] = json.dumps(uploaded_images)
 
-    # Always persist locally — guarantees it shows in listings immediately
+    # 1. Always persist locally in SQLite & JSON — guarantees instant availability
     _save_local_property(data)
 
-    # Also push to Supabase if available
+    # 2. Push to Supabase PostgreSQL database tables (persists across all Vercel serverless containers and devices)
     if supabase is not None:
         try:
-            supabase.table('properties').insert(data).execute()
-        except Exception:
-            pass
+            city_id = None
+            try:
+                city_res = supabase.table('cities').select('id').ilike('name', '%islamabad%').limit(1).execute()
+                if city_res.data:
+                    city_id = city_res.data[0]['id']
+            except Exception:
+                pass
+
+            is_rent = 'rent' in (data.get('status') or '').lower() or 'rent' in (data.get('purpose') or '').lower()
+            listing_purpose = 'rent' if is_rent else 'buy'
+            p_cat = 'Flats' if any(k in (data.get('property_type') or '').lower() for k in ['flat', 'apartment']) else ('Plots' if 'plot' in (data.get('property_type') or '').lower() else 'Houses')
+            p_type = 'Apartment' if p_cat == 'Flats' else ('Plot' if p_cat == 'Plots' else 'House')
+            
+            import re
+            slug = re.sub(r'[^a-z0-9]+', '-', (data.get('title') or 'prop').lower()).strip('-')
+
+            supabase_prop = {
+                'id': prop_id,
+                'slug': f"{slug}-{prop_id[:8]}",
+                'title': data['title'],
+                'description': data.get('description') or '',
+                'property_category': p_cat,
+                'property_type': p_type,
+                'listing_purpose': listing_purpose,
+                'status': 'active',
+                'price_numeric': data.get('price_numeric') or 0,
+                'currency': 'PKR',
+                'beds': data.get('beds') or 0,
+                'baths': data.get('baths') or 0,
+                'area_sqft': data.get('area_sqft') or 0,
+                'city_id': city_id,
+                'address': data.get('address') or 'Islamabad'
+            }
+            supabase.table('properties').insert(supabase_prop).execute()
+
+            # Insert image records into Supabase property_images table
+            for idx, img_url in enumerate(uploaded_images):
+                try:
+                    supabase.table('property_images').insert({
+                        'id': str(uuid.uuid4()),
+                        'property_id': prop_id,
+                        'url': img_url,
+                        'is_primary': (idx == 0),
+                        'sort_order': idx
+                    }).execute()
+                except Exception as img_err:
+                    print(f"Error inserting property image into Supabase: {img_err}")
+        except Exception as sup_err:
+            print(f"Error inserting property into Supabase: {sup_err}")
 
     return jsonify({'status': 'success', 'property': data, 'images': uploaded_images}), 201
 
@@ -519,6 +587,7 @@ def delete_property(property_id):
     # Best-effort remove from Supabase too
     if supabase is not None:
         try:
+            supabase.table('property_images').delete().eq('property_id', property_id).execute()
             supabase.table('properties').delete().eq('id', property_id).execute()
         except Exception:
             pass
