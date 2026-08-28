@@ -1059,7 +1059,12 @@ a{{color:inherit;text-decoration:none}}
 </body>
 </html>"""
 
-    os.makedirs("data", exist_ok=True)
+    # On Vercel the project filesystem is read-only; use /tmp instead
+    import os as _os
+    _on_vercel = _os.environ.get('VERCEL') or _os.environ.get('VERCEL_ENV')
+    if _on_vercel:
+        filename = '/tmp/competitor_report.html'
+    _os.makedirs(_os.path.dirname(_os.path.abspath(filename)), exist_ok=True)
     with open(filename, "w", encoding="utf-8") as f:
       f.write(html)
     print(f"📄 HTML report → {filename}")
@@ -1188,7 +1193,11 @@ a{{color:inherit;text-decoration:none}}
       "=" * 72,
     ]
 
-    os.makedirs("data", exist_ok=True)
+    import os as _os
+    _on_vercel = _os.environ.get('VERCEL') or _os.environ.get('VERCEL_ENV')
+    if _on_vercel:
+        filename = '/tmp/competitor_report.txt'
+    _os.makedirs(_os.path.dirname(_os.path.abspath(filename)), exist_ok=True)
     with open(filename, "w", encoding="utf-8") as f:
       f.write("\n".join(lines))
     print(f"📄 Text report → {filename}")

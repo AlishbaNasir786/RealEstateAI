@@ -87,6 +87,11 @@ def serve_static(filename):
 
 @app.route('/modules/data/<path:filename>')
 def serve_modules_data(filename):
+    # On Vercel reports are written to /tmp/ (writable). Check there first.
+    tmp_path = os.path.join('/tmp', filename)
+    if os.path.exists(tmp_path):
+        return send_from_directory('/tmp', filename)
+    # Fall back to the committed static copy in modules/data/
     data_dir = os.path.join(os.path.dirname(__file__), 'modules', 'data')
     return send_from_directory(data_dir, filename)
 

@@ -117,6 +117,11 @@ def scan_page(url: str, label: str = "") -> dict:
         result["status_code"]  = resp.status_code
         result["load_time_ms"] = load_ms
 
+        # 401 = Vercel Deployment Protection — can't self-scan, skip gracefully
+        if resp.status_code == 401:
+            result["error"] = "Skipped (deployment protection active)"
+            return result
+
         if resp.status_code != 200:
             result["error"] = f"HTTP {resp.status_code}"
             result["issues"].append(
