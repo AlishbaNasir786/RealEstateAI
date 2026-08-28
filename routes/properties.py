@@ -244,52 +244,42 @@ def _dedup_merge(*lists):
 
 
 def get_home_inventory():
-    """Return exact unified property inventory displayed on the home listing page.
-    Results are cached in-memory for _CACHE_TTL_SECONDS to avoid repeated Supabase calls.
-    """
-    global _inventory_cache, _inventory_cache_time
-
-    # ── Serve from cache if still fresh ─────────────────────────────────
-    if _inventory_cache is not None and (time.time() - _inventory_cache_time) < _CACHE_TTL_SECONDS:
-        return _inventory_cache
-
+    """Return exact unified property inventory displayed on the home listing page."""
     local_props = _load_local_properties()
 
-    try:
-        isb_city_id = None
+    remote_props = []
+    if supabase is not None:
         try:
-            city_res = supabase.table('cities').select('id').ilike('name', '%islamabad%').limit(1).execute()
-            if city_res.data:
-                isb_city_id = city_res.data[0]['id']
+            isb_city_id = None
+            try:
+                city_res = supabase.table('cities').select('id').ilike('name', '%islamabad%').limit(1).execute()
+                if city_res.data:
+                    isb_city_id = city_res.data[0]['id']
+            except Exception:
+                pass
+
+            response = supabase.table('properties').select('*').execute()
+            props = response.data or []
+
+            isb_keywords = ['islamabad', 'f-6', 'f-7', 'f-8', 'f-10', 'f-11', 'e-11', 'g-9', 'g-10', 'g-11', 'g-13', 'dha', 'bahria', 'b-17', 'blue area']
+
+            for p in props:
+                if isb_city_id and p.get('city_id') == isb_city_id:
+                    remote_props.append(p)
+                    continue
+                txt = f"{p.get('address') or ''} {p.get('city') or ''} {p.get('location') or ''} {p.get('title') or ''}".lower()
+                if any(k in txt for k in isb_keywords) and not any(other in txt for other in ['lahore', 'karachi', 'rawalpindi', 'peshawar', 'multan']):
+                    remote_props.append(p)
         except Exception:
             pass
 
-        response = supabase.table('properties').select('*').execute()
-        props = response.data or []
-
-        isb_keywords = ['islamabad', 'f-6', 'f-7', 'f-8', 'f-10', 'f-11', 'e-11', 'g-9', 'g-10', 'g-11', 'g-13', 'dha', 'bahria', 'b-17', 'blue area']
-
-        filtered = []
-        for p in props:
-            if isb_city_id and p.get('city_id') == isb_city_id:
-                filtered.append(p)
-                continue
-            txt = f"{p.get('address') or ''} {p.get('city') or ''} {p.get('location') or ''} {p.get('title') or ''}".lower()
-            if any(k in txt for k in isb_keywords) and not any(other in txt for other in ['lahore', 'karachi', 'rawalpindi', 'peshawar', 'multan']):
-                filtered.append(p)
-
-        result = _dedup_merge(local_props, filtered, ISLAMABAD_FALLBACK)
-    except Exception:
-        result = _dedup_merge(local_props, ISLAMABAD_FALLBACK)
+    result = _dedup_merge(local_props, remote_props, ISLAMABAD_FALLBACK)
 
     # Filter out any deleted properties
     deleted_ids = _load_deleted_ids()
     if deleted_ids:
         result = [p for p in result if str(p.get('id')) not in deleted_ids]
 
-    # ── Store in cache ───────────────────────────────────────────────────
-    _inventory_cache = result
-    _inventory_cache_time = time.time()
     return result
 
 
