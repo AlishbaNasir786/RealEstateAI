@@ -22,7 +22,9 @@ async function initAuthAndBanner() {
     if (data.authenticated && data.user) {
       currentUser = data.user;
       // Restore phone globally for persona auto-send
-      window.currentClientPhone = data.user.phone || '';
+      const userPhone = data.user.phone || sessionStorage.getItem('client_phone') || '';
+      window.currentClientPhone = userPhone;
+      if (userPhone) sessionStorage.setItem('client_phone', userPhone);
       renderUserHeaderBadge(true);
 
       if (!currentUser.segment) {
@@ -324,7 +326,9 @@ async function handleAuthSubmit(e) {
     if (data.status === 'success' && data.user) {
       currentUser = data.user;
       // Store client phone globally so persona engine can auto-send to this number
-      window.currentClientPhone = data.user.phone || phone || '';
+      const userPhone = data.user.phone || phone || '';
+      window.currentClientPhone = userPhone;
+      if (userPhone) sessionStorage.setItem('client_phone', userPhone);
       closeAuthModal();
       renderUserHeaderBadge(true);
       // ALWAYS open persona onboarding screen immediately right after login/signup

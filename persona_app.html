@@ -1429,7 +1429,7 @@
           document.getElementById('waMessageText').innerText = waData.text;
 
           // 6. Auto-send to client phone if available (set during login/signup)
-          const clientPhone = window.currentClientPhone || '';
+          const clientPhone = window.currentClientPhone || sessionStorage.getItem('client_phone') || (typeof currentUser !== 'undefined' && currentUser ? currentUser.phone : '') || '';
           if (clientPhone) {
             autoSendToClientPhone(clientPhone, waData.text);
           }
@@ -1447,7 +1447,7 @@
         document.getElementById('chipAgent').className = "chip active";
         document.getElementById('chipCustom').className = "chip";
         // Show client chip if we have a phone
-        const clientPhone = window.currentClientPhone || '';
+        const clientPhone = window.currentClientPhone || sessionStorage.getItem('client_phone') || (typeof currentUser !== 'undefined' && currentUser ? currentUser.phone : '') || '';
         const chipClient = document.getElementById('chipClient');
         const chipClientPhone = document.getElementById('chipClientPhone');
         if (clientPhone && chipClient && chipClientPhone) {
