@@ -56,9 +56,9 @@ persona_bp = Blueprint('persona', __name__)
 # → copy idInstance and apiTokenInstance into .env:
 #   GREEN_API_INSTANCE_ID=1234567890
 #   GREEN_API_TOKEN=your_token_here
-GREEN_API_INSTANCE_ID = os.environ.get('GREEN_API_INSTANCE_ID', '')
-GREEN_API_TOKEN       = os.environ.get('GREEN_API_TOKEN', '')
-GREEN_API_BASE        = os.environ.get('GREEN_API_URL', 'https://api.green-api.com')
+GREEN_API_INSTANCE_ID = os.environ.get('GREEN_API_INSTANCE_ID', '') or '710722700714'
+GREEN_API_TOKEN       = os.environ.get('GREEN_API_TOKEN', '') or '89d888065d5145268673445bd17a69ac8822854268d8447ab2'
+GREEN_API_BASE        = os.environ.get('GREEN_API_URL', 'https://7107.api.greenapi.com') or 'https://7107.api.greenapi.com'
 
 
 def _clean_phone(raw: str) -> str:
