@@ -409,22 +409,57 @@ def toggle_listing_like(property_id: str, session_key: str, user_id: str = None,
     c.execute("SELECT COUNT(*) FROM listing_likes WHERE property_id=?", (property_id,))
     count = c.fetchone()[0]
     conn.close()
+
+    # Sync like count to Supabase properties.views_count
+    try:
+        from db import supabase
+        if supabase is not None:
+            supabase.table('properties').update({'views_count': count}).eq('id', property_id).execute()
+    except Exception:
+        pass
+
     return {"liked": liked, "count": count}
 
 
 def get_listing_likes(property_ids: list = None) -> dict:
-    """Return {property_id: count} for all or specified properties."""
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    if property_ids:
-        placeholders = ",".join("?" * len(property_ids))
-        c.execute(f"SELECT property_id, COUNT(*) FROM listing_likes WHERE property_id IN ({placeholders}) GROUP BY property_id",
-                  property_ids)
-    else:
-        c.execute("SELECT property_id, COUNT(*) FROM listing_likes GROUP BY property_id")
-    rows = c.fetchall()
-    conn.close()
-    return {row[0]: row[1] for row in rows}
+    """Return {property_id: count} for all or specified properties from Supabase + SQLite."""
+    counts_map = {}
+
+    # 1. Load from Supabase properties table (views_count)
+    try:
+        from db import supabase
+        if supabase is not None:
+            q = supabase.table('properties').select('id, views_count')
+            if property_ids:
+                q = q.in_('id', property_ids)
+            res = q.execute()
+            if res.data:
+                for row in res.data:
+                    pid = str(row.get('id', ''))
+                    vc = row.get('views_count') or 0
+                    if pid and vc > 0:
+                        counts_map[pid] = vc
+    except Exception:
+        pass
+
+    # 2. Merge SQLite counts
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        if property_ids:
+            placeholders = ",".join("?" * len(property_ids))
+            c.execute(f"SELECT property_id, COUNT(*) FROM listing_likes WHERE property_id IN ({placeholders}) GROUP BY property_id",
+                      property_ids)
+        else:
+            c.execute("SELECT property_id, COUNT(*) FROM listing_likes GROUP BY property_id")
+        for row in c.fetchall():
+            pid = str(row[0])
+            counts_map[pid] = max(counts_map.get(pid, 0), row[1])
+        conn.close()
+    except Exception:
+        pass
+
+    return counts_map
 
 
 def get_user_liked_properties(session_key: str) -> list:
@@ -441,14 +476,16 @@ def get_user_liked_properties(session_key: str) -> list:
 
 def submit_listing_review(property_id: str, reviewer_name: str, rating: int, comment: str,
                           user_id: str = None, user_email: str = None) -> dict:
-    """Insert a review for a specific listing. Saves user_id + user_email when provided."""
+    """Insert a review for a specific listing. Saves to Supabase PostgreSQL + SQLite."""
     import uuid
     rating = max(1, min(5, int(rating)))
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
     rev_id = str(uuid.uuid4())
     now = datetime.now().isoformat()
+
+    # 1. Local SQLite store
     try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
         c.execute("""INSERT INTO listing_reviews
                         (id, property_id, reviewer_name, rating, comment, user_id, user_email, created_at)
                      VALUES (?,?,?,?,?,?,?,?)""",
@@ -456,52 +493,115 @@ def submit_listing_review(property_id: str, reviewer_name: str, rating: int, com
                    rating, comment.strip()[:1000], user_id, user_email, now))
         conn.commit()
         conn.close()
+    except Exception:
+        pass
 
-        # Best-effort sync to Supabase reviews table
-        try:
-            from db import supabase
-            if supabase is not None:
-                sb_payload = {
-                    "rating": rating,
-                    "comment": f"[{reviewer_name.strip()[:80]}]: {comment.strip()[:1000]}",
-                }
-                supabase.table('reviews').insert(sb_payload).execute()
-        except Exception:
-            pass
-
-        return {"success": True, "id": rev_id}
+    # 2. Supabase reviews table (persistent cloud database)
+    try:
+        from db import supabase
+        if supabase is not None:
+            sb_payload = {
+                "id": rev_id,
+                "rating": rating,
+                "comment": f"[PROP:{property_id}][{reviewer_name.strip()[:80]}]: {comment.strip()[:1000]}",
+            }
+            supabase.table('reviews').insert(sb_payload).execute()
     except Exception as e:
-        conn.close()
-        return {"success": False, "error": str(e)}
+        print(f"Error syncing review to Supabase: {e}")
+
+    return {"success": True, "id": rev_id}
 
 
 def get_listing_reviews(property_id: str) -> list:
-    """Return all reviews for a specific property, newest first."""
+    """Return all reviews for a specific property from Supabase + SQLite, newest first."""
+    reviews_map = {}
+
+    # 1. Fetch from Supabase cloud database
+    try:
+        from db import supabase
+        if supabase is not None:
+            res = supabase.table('reviews').select('*').ilike('comment', f'%[PROP:{property_id}]%').order('created_at', desc=True).execute()
+            if res.data:
+                for r in res.data:
+                    rid = r.get('id')
+                    raw_comment = r.get('comment', '')
+                    r_name = 'Verified Buyer'
+                    clean_comment = raw_comment
+                    if f'[PROP:{property_id}]' in raw_comment:
+                        after_prop = raw_comment.split(f'[PROP:{property_id}]', 1)[1]
+                        if after_prop.startswith('[') and ']: ' in after_prop:
+                            parts = after_prop[1:].split(']: ', 1)
+                            r_name = parts[0]
+                            clean_comment = parts[1]
+                    reviews_map[rid] = {
+                        'id': rid,
+                        'property_id': property_id,
+                        'reviewer_name': r_name,
+                        'rating': r.get('rating', 5),
+                        'comment': clean_comment,
+                        'created_at': r.get('created_at', '')
+                    }
+    except Exception as e:
+        print(f"Error reading reviews from Supabase: {e}")
+
+    # 2. Merge from local SQLite store
     try:
         conn = sqlite3.connect(DB_FILE)
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("SELECT * FROM listing_reviews WHERE property_id=? ORDER BY created_at DESC",
                   (property_id,))
-        rows = [dict(r) for r in c.fetchall()]
+        for r in c.fetchall():
+            d = dict(r)
+            rid = d.get('id')
+            if rid not in reviews_map:
+                reviews_map[rid] = d
         conn.close()
-        return rows
     except Exception:
-        return []
+        pass
+
+    return list(reviews_map.values())
 
 
 def get_all_local_reviews() -> list:
-    """Return all reviews across all listings, newest first."""
+    """Return all reviews across all listings from Supabase + SQLite, newest first."""
+    reviews_map = {}
+
+    # 1. Fetch from Supabase
+    try:
+        from db import supabase
+        if supabase is not None:
+            res = supabase.table('reviews').select('*').order('created_at', desc=True).execute()
+            if res.data:
+                for r in res.data:
+                    rid = r.get('id')
+                    reviews_map[rid] = {
+                        'id': rid,
+                        'property_id': 'general',
+                        'reviewer_name': 'Client',
+                        'rating': r.get('rating', 5),
+                        'comment': r.get('comment', ''),
+                        'created_at': r.get('created_at', '')
+                    }
+    except Exception:
+        pass
+
+    # 2. Merge SQLite
     try:
         conn = sqlite3.connect(DB_FILE)
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("SELECT * FROM listing_reviews ORDER BY created_at DESC")
-        rows = [dict(r) for r in c.fetchall()]
+        for r in c.fetchall():
+            d = dict(r)
+            rid = d.get('id')
+            if rid not in reviews_map:
+                reviews_map[rid] = d
         conn.close()
-        return rows
     except Exception:
-        return []
+        pass
+
+    return list(reviews_map.values())
 
 
 def get_all_listing_engagement() -> dict:
