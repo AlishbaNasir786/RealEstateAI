@@ -42,21 +42,45 @@ _COMMITTED_STORE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 
 
 
 def _load_local_properties():
+    props_dict = {}
+    # 1. Load from committed & /tmp JSON files
     for path in [_LOCAL_STORE_PATH, _COMMITTED_STORE_PATH]:
         try:
             if os.path.exists(path):
                 with open(path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     if isinstance(data, list):
-                        return data
+                        for p in data:
+                            pid = str(p.get('id', ''))
+                            if pid and pid not in props_dict:
+                                props_dict[pid] = p
         except Exception:
             pass
-    return []
+
+    # 2. Also load from SQLite custom_properties table
+    try:
+        from auth_db import get_all_custom_properties
+        for p in get_all_custom_properties():
+            pid = str(p.get('id', ''))
+            if pid and pid not in props_dict:
+                props_dict[pid] = p
+    except Exception:
+        pass
+
+    return list(props_dict.values())
 
 
 def _save_local_property(prop: dict):
+    # 1. Save to SQLite
+    try:
+        from auth_db import save_custom_property
+        save_custom_property(prop)
+    except Exception:
+        pass
+
+    # 2. Save to JSON store
     existing = _load_local_properties()
-    existing = [p for p in existing if p.get('id') != prop.get('id')]
+    existing = [p for p in existing if str(p.get('id')) != str(prop.get('id'))]
     existing.insert(0, prop)
     try:
         os.makedirs(os.path.dirname(_LOCAL_STORE_PATH), exist_ok=True)
@@ -274,8 +298,9 @@ def get_properties():
     """Return all Islamabad properties served on the home listing page."""
     data = get_home_inventory()
     resp = jsonify(data)
-    # Allow browser/CDN to cache for 60s; shared caches 5 min
-    resp.headers['Cache-Control'] = 'public, max-age=60, s-maxage=300'
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
     return resp, 200
 
 
@@ -478,6 +503,12 @@ def delete_property(property_id):
         os.makedirs(os.path.dirname(_LOCAL_STORE_PATH), exist_ok=True)
         with open(_LOCAL_STORE_PATH, 'w', encoding='utf-8') as f:
             json.dump(new_list, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+    try:
+        from auth_db import delete_custom_property
+        delete_custom_property(str_pid)
     except Exception:
         pass
 

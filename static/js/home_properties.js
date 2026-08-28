@@ -42,10 +42,11 @@ function showSkeletons(count = 6) {
 
 async function loadProperties() {
   try {
+    const timestamp = Date.now();
     const [propRes, imgRes, likeRes] = await Promise.all([
-      fetch('/api/properties'),
-      fetch('/api/property_images'),
-      fetch('/api/listings/likes'),
+      fetch('/api/properties?_t=' + timestamp),
+      fetch('/api/property_images?_t=' + timestamp),
+      fetch('/api/listings/likes?_t=' + timestamp),
     ]);
     if (!propRes.ok) throw new Error('Failed to fetch properties');
 
@@ -1171,7 +1172,11 @@ async function handleAdminAddPropertySubmit(e) {
       alert('🎉 Property successfully created in Islamabad inventory!');
       closeAdminAddPropertyModal();
       form.reset();
-      loadProperties(); // Reload properties grid
+      // Instantly prepend to list for zero-delay visual feedback
+      _allLoadedProperties = [data.property, ..._allLoadedProperties.filter(p => p.id !== data.property.id)];
+      renderPropertiesList(_allLoadedProperties);
+      // Reload fresh list from server
+      loadProperties();
     } else {
       errDiv.textContent = data.error || 'Failed to create property.';
       errDiv.style.display = 'block';

@@ -106,6 +106,15 @@ def init_auth_db():
     )
     """)
 
+    # Custom properties added by admin
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS custom_properties (
+        id            TEXT PRIMARY KEY,
+        data_json     TEXT NOT NULL,
+        created_at    TEXT NOT NULL
+    )
+    """)
+
     # Sector promotional videos — one per sector/area
     c.execute("""
     CREATE TABLE IF NOT EXISTS sector_videos (
@@ -525,6 +534,60 @@ def get_all_listing_engagement() -> dict:
         "total_listing_reviews": total_reviews,
         "per_property_stats": per_property,
     }
+
+
+def save_custom_property(prop: dict):
+    """Save or update a custom property record in SQLite."""
+    import json
+    pid = str(prop.get('id', ''))
+    if not pid:
+        return
+    now = datetime.now().isoformat()
+    data_str = json.dumps(prop, ensure_ascii=False)
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO custom_properties (id, data_json, created_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET data_json=excluded.data_json
+        """, (pid, data_str, now))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+def get_all_custom_properties() -> list:
+    """Retrieve all custom properties saved in SQLite."""
+    import json
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute("SELECT data_json FROM custom_properties ORDER BY created_at DESC")
+        rows = c.fetchall()
+        conn.close()
+        result = []
+        for r in rows:
+            try:
+                result.append(json.loads(r[0]))
+            except Exception:
+                pass
+        return result
+    except Exception:
+        return []
+
+
+def delete_custom_property(property_id: str):
+    """Delete a custom property from SQLite."""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute("DELETE FROM custom_properties WHERE id = ?", (str(property_id),))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
 
 # Ensure DB + seeded accounts exist on import
