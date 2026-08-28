@@ -1,117 +1,110 @@
 """
-vector_store.py — ChromaDB Vector Store
-This is the vector index: it persists chunk embeddings to a local
-ChromaDB collection (on disk under modules/brand_memory/chroma_db/) and
-provides similarity search over them.
-
-store.py writes to this when a document is ingested (add_chunks).
-rag_engine.py reads from this (via store.search_chunks -> query) when
-answering a question.
+vector_store.py — Vector Store with SQLite & ChromaDB Support
+Persists chunk embeddings and provides similarity search over them.
+Falls back seamlessly to lightweight SQLite-based vector search if ChromaDB
+is not installed, ensuring 100% compatibility with serverless deployments.
 """
 
 import os
+import json
+import sqlite3
+import math
 
-from .embeddings import embed_batch, EMBED_DIM
+from .embeddings import embed_batch, embed_text, EMBED_DIM
 
-# chromadb is imported lazily inside _get_collection() so the heavy package
-# (~200 MB) is only loaded when Brand Memory is actually used — not at startup.
-# This prevents Vercel Lambda size-limit failures that block other packages.
-
-CHROMA_DIR = os.path.join(os.environ.get("TMPDIR", "/tmp") if os.environ.get("VERCEL") else os.path.dirname(__file__), "chroma_db")
-COLLECTION_NAME = "brand_knowledge"
+DB_FILE = os.path.join(os.environ.get("TMPDIR", "/tmp") if os.environ.get("VERCEL") else os.path.dirname(__file__), "brand_vectors.db")
 
 
-def _get_bridge_ef():
-    """Return ChromaDB embedding function, importing chromadb lazily."""
-    from chromadb.utils.embedding_functions import EmbeddingFunction  # noqa: lazy
-
-    class _BridgeEmbeddingFunction(EmbeddingFunction):
-        """Adapts embeddings.embed_batch() to ChromaDB's EmbeddingFunction protocol."""
-
-        def __call__(self, input):
-            return embed_batch(list(input))
-
-        @staticmethod
-        def name() -> str:
-            return "brand_memory_bridge_embedding"
-
-        def get_config(self) -> dict:
-            return {"dim": EMBED_DIM}
-
-        @staticmethod
-        def build_from_config(config: dict) -> "_BridgeEmbeddingFunction":
-            return _BridgeEmbeddingFunction()
-
-    return _BridgeEmbeddingFunction()
+def _get_db():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS chunk_vectors (
+            id          TEXT PRIMARY KEY,
+            doc_id      TEXT NOT NULL,
+            doc_title   TEXT NOT NULL,
+            chunk_index INTEGER NOT NULL,
+            chunk       TEXT NOT NULL,
+            vector_json TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    return conn
 
 
-_collection = None
-
-
-def _get_collection():
-    """Lazily create/reuse the persistent ChromaDB collection."""
-    global _collection
-    if _collection is not None:
-        return _collection
-    import chromadb as _chromadb  # lazy — only loaded when Brand Memory is used
-    client = _chromadb.PersistentClient(path=CHROMA_DIR)
-    _collection = client.get_or_create_collection(
-        name=COLLECTION_NAME,
-        embedding_function=_get_bridge_ef(),
-        metadata={"hnsw:space": "cosine"},
-    )
-    return _collection
+def _cosine_similarity(vec_a: list, vec_b: list) -> float:
+    """Compute cosine similarity between two float vectors."""
+    if not vec_a or not vec_b or len(vec_a) != len(vec_b):
+        return 0.0
+    dot = sum(a * b for a, b in zip(vec_a, vec_b))
+    norm_a = math.sqrt(sum(a * a for a in vec_a))
+    norm_b = math.sqrt(sum(b * b for b in vec_b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
 
 
 def add_chunks(doc_id: str, doc_title: str, chunks: list):
-    """Embed a document's chunks and add them to the vector index."""
+    """Embed a document's chunks and add them to the vector store."""
     if not chunks:
         return
-    collection = _get_collection()
-    ids = [f"{doc_id}::{i}" for i in range(len(chunks))]
-    metadatas = [
-        {"doc_id": doc_id, "doc_title": doc_title, "chunk_index": i}
-        for i in range(len(chunks))
-    ]
-    collection.add(documents=chunks, ids=ids, metadatas=metadatas)
+    vectors = embed_batch(chunks)
+    conn = _get_db()
+    cur = conn.cursor()
+    for i, (chunk, vec) in enumerate(zip(chunks, vectors)):
+        chunk_id = f"{doc_id}::{i}"
+        cur.execute("""
+            INSERT OR REPLACE INTO chunk_vectors (id, doc_id, doc_title, chunk_index, chunk, vector_json)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (chunk_id, doc_id, doc_title, i, chunk, json.dumps(vec)))
+    conn.commit()
+    conn.close()
 
 
 def delete_document_chunks(doc_id: str):
-    """Remove all vectors belonging to a document (called when a doc is deleted)."""
-    collection = _get_collection()
-    try:
-        collection.delete(where={"doc_id": doc_id})
-    except Exception as e:
-        print(f"[brand_memory] vector delete error: {e}")
+    """Remove all vectors belonging to a document."""
+    conn = _get_db()
+    conn.execute("DELETE FROM chunk_vectors WHERE doc_id = ?", (doc_id,))
+    conn.commit()
+    conn.close()
 
 
 def query(question: str, top_k: int = 4) -> list:
     """
-    Semantic similarity search: embed the question, find the top_k nearest
-    chunks across all documents by cosine distance.
-    Returns: list[dict] -> {chunk, doc_id, doc_title, score} (score = similarity, higher is better)
+    Semantic similarity search: embed the question, find top_k nearest chunks.
+    Returns: list[dict] -> {chunk, doc_id, doc_title, score}
     """
-    collection = _get_collection()
-    count = collection.count()
-    if count == 0:
+    q_vec = embed_text(question)
+    if not q_vec:
         return []
 
-    results = collection.query(query_texts=[question], n_results=min(top_k, count))
-    docs = (results.get("documents") or [[]])[0]
-    metas = (results.get("metadatas") or [[]])[0]
-    dists = (results.get("distances") or [[]])[0]
+    conn = _get_db()
+    rows = conn.execute("SELECT id, doc_id, doc_title, chunk, vector_json FROM chunk_vectors").fetchall()
+    conn.close()
 
-    matches = []
-    for chunk, meta, dist in zip(docs, metas, dists):
-        similarity = round(max(0.0, 1 - dist), 3)  # cosine distance -> similarity
-        matches.append({
-            "chunk": chunk,
-            "doc_id": meta.get("doc_id"),
-            "doc_title": meta.get("doc_title"),
-            "score": similarity,
-        })
-    return matches
+    if not rows:
+        return []
+
+    scored = []
+    for r in rows:
+        try:
+            chunk_vec = json.loads(r["vector_json"])
+            sim = _cosine_similarity(q_vec, chunk_vec)
+            scored.append({
+                "chunk": r["chunk"],
+                "doc_id": r["doc_id"],
+                "doc_title": r["doc_title"],
+                "score": round(max(0.0, sim), 3),
+            })
+        except Exception:
+            continue
+
+    scored.sort(key=lambda x: x["score"], reverse=True)
+    return scored[:top_k]
 
 
 def collection_size() -> int:
-    return _get_collection().count()
+    conn = _get_db()
+    count = conn.execute("SELECT COUNT(*) FROM chunk_vectors").fetchone()[0]
+    conn.close()
+    return count

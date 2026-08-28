@@ -8,6 +8,5 @@ pillow==12.3.0
 reportlab==5.0.0
 pandas==2.2.3
 pypdf==5.9.0
-chromadb==1.5.9
 werkzeug==3.0.6
 supabase==2.15.0

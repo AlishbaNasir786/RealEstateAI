@@ -7,16 +7,17 @@ deep analytics and listing-level enrichment.
 import sys
 import io
 
-# Force UTF-8 output so emoji print correctly on Windows.
-# line_buffering=True ensures every print() is flushed immediately,
-# which is required for the SSE progress bar to update in real time.
-if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
-else:
-    # Already UTF-8 but may still be block-buffered (e.g. when piped) — force line buffering
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
-if sys.stderr.encoding and sys.stderr.encoding.lower() != "utf-8":
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+try:
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
+except Exception:
+    pass
+
+try:
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
+except Exception:
+    pass
 
 import requests
 from datetime import datetime
