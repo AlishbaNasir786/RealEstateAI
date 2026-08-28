@@ -6,6 +6,7 @@ that the AI insights engine uses to identify weak points.
 No third-party accounts needed — you own the site, you can scrape it freely.
 """
 
+import os
 import time
 import re
 import requests
@@ -16,7 +17,7 @@ from urllib.parse import urljoin, urlparse
 # Pages to scan (extend as needed)
 # ---------------------------------------------------------------------------
 
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = os.environ.get("SITE_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
 
 PAGES_TO_SCAN = [
     {"url": BASE_URL + "/",                    "label": "Home (Listings)"},

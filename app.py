@@ -114,6 +114,78 @@ def persona_page():
 def run_engine():
     import queue, threading
 
+    # ── Vercel: subprocess is blocked — call the module directly ─────────────
+    IS_VERCEL = bool(os.environ.get('VERCEL') or os.environ.get('VERCEL_ENV'))
+
+    if IS_VERCEL:
+        def generate():
+            import io, sys
+            yield "data: 0% — Scraper starting…\n\n"
+
+            output_q = queue.Queue()
+
+            def _run_engine_in_thread():
+                """Run competitor engine in-process, capturing print() output."""
+                import importlib.util, sys, io
+                # Redirect stdout so print() calls become SSE messages
+                old_stdout = sys.stdout
+                class _LineCapture(io.TextIOBase):
+                    def write(self, text):
+                        if text.strip():
+                            output_q.put(text.rstrip('\r\n'))
+                        return len(text)
+                sys.stdout = _LineCapture()
+                try:
+                    # Load competitor_engine as a module without re-importing cached version
+                    spec = importlib.util.spec_from_file_location(
+                        "competitor_engine",
+                        os.path.abspath(os.path.join('modules', 'competitor_engine.py'))
+                    )
+                    mod = importlib.util.module_from_spec(spec)
+                    old_cwd = os.getcwd()
+                    os.chdir(os.path.abspath('modules'))
+                    try:
+                        spec.loader.exec_module(mod)
+                    finally:
+                        os.chdir(old_cwd)
+                except SystemExit:
+                    pass  # competitor_engine calls sys.exit(1) on failure — safe to swallow
+                except Exception as exc:
+                    output_q.put(f"ERROR: {exc}")
+                finally:
+                    sys.stdout = old_stdout
+                    output_q.put(None)  # sentinel
+
+            t = threading.Thread(target=_run_engine_in_thread, daemon=True)
+            t.start()
+
+            while True:
+                try:
+                    line = output_q.get(timeout=2.0)
+                except queue.Empty:
+                    if not t.is_alive():
+                        break
+                    yield ": keepalive\n\n"
+                    continue
+                if line is None:
+                    break
+                yield f"data: {line}\n\n"
+
+            if t.is_alive():
+                t.join(timeout=5)
+            yield "data: [DONE]\n\n"
+
+        return Response(
+            generate(),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',
+                'Connection': 'keep-alive',
+            },
+        )
+
+    # ── Local dev: original subprocess approach (unchanged) ──────────────────
     script_path = os.path.abspath(os.path.join('modules', 'competitor_engine.py'))
     cwd_path    = os.path.abspath('modules')
 

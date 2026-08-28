@@ -1,4 +1,4 @@
-﻿"""
+"""
 vector_store.py — ChromaDB Vector Store
 This is the vector index: it persists chunk embeddings to a local
 ChromaDB collection (on disk under modules/brand_memory/chroma_db/) and
@@ -11,31 +11,38 @@ answering a question.
 
 import os
 
-import chromadb
-from chromadb.utils.embedding_functions import EmbeddingFunction
-
 from .embeddings import embed_batch, EMBED_DIM
+
+# chromadb is imported lazily inside _get_collection() so the heavy package
+# (~200 MB) is only loaded when Brand Memory is actually used — not at startup.
+# This prevents Vercel Lambda size-limit failures that block other packages.
 
 CHROMA_DIR = os.path.join(os.environ.get("TMPDIR", "/tmp") if os.environ.get("VERCEL") else os.path.dirname(__file__), "chroma_db")
 COLLECTION_NAME = "brand_knowledge"
 
 
-class _BridgeEmbeddingFunction(EmbeddingFunction):
-    """Adapts embeddings.embed_batch() to ChromaDB's EmbeddingFunction protocol."""
+def _get_bridge_ef():
+    """Return ChromaDB embedding function, importing chromadb lazily."""
+    from chromadb.utils.embedding_functions import EmbeddingFunction  # noqa: lazy
 
-    def __call__(self, input):
-        return embed_batch(list(input))
+    class _BridgeEmbeddingFunction(EmbeddingFunction):
+        """Adapts embeddings.embed_batch() to ChromaDB's EmbeddingFunction protocol."""
 
-    @staticmethod
-    def name() -> str:
-        return "brand_memory_bridge_embedding"
+        def __call__(self, input):
+            return embed_batch(list(input))
 
-    def get_config(self) -> dict:
-        return {"dim": EMBED_DIM}
+        @staticmethod
+        def name() -> str:
+            return "brand_memory_bridge_embedding"
 
-    @staticmethod
-    def build_from_config(config: dict) -> "_BridgeEmbeddingFunction":
-        return _BridgeEmbeddingFunction()
+        def get_config(self) -> dict:
+            return {"dim": EMBED_DIM}
+
+        @staticmethod
+        def build_from_config(config: dict) -> "_BridgeEmbeddingFunction":
+            return _BridgeEmbeddingFunction()
+
+    return _BridgeEmbeddingFunction()
 
 
 _collection = None
@@ -46,10 +53,11 @@ def _get_collection():
     global _collection
     if _collection is not None:
         return _collection
-    client = chromadb.PersistentClient(path=CHROMA_DIR)
+    import chromadb as _chromadb  # lazy — only loaded when Brand Memory is used
+    client = _chromadb.PersistentClient(path=CHROMA_DIR)
     _collection = client.get_or_create_collection(
         name=COLLECTION_NAME,
-        embedding_function=_BridgeEmbeddingFunction(),
+        embedding_function=_get_bridge_ef(),
         metadata={"hnsw:space": "cosine"},
     )
     return _collection
