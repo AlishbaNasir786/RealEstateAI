@@ -19,7 +19,54 @@ try:
 except Exception:
     pass
 
-import requests
+# Use built-in urllib so Vercel bundle-size optimization can never strip it
+try:
+    import requests as _req_lib
+except ImportError:
+    _req_lib = None
+
+if _req_lib is not None:
+    requests = _req_lib
+else:
+    # Minimal urllib-based shim matching the requests API used here
+    import urllib.request as _urllib_req
+    import urllib.error as _urllib_err
+    import ssl as _ssl
+
+    class _FakeResponse:
+        def __init__(self, status, text):
+            self.status_code = status
+            self.text = text
+
+    class _TimeoutError(Exception): pass
+    class _ConnectionError(Exception): pass
+    class _ChunkedEncodingError(Exception): pass
+
+    class _Exceptions:
+        Timeout = _TimeoutError
+        ConnectionError = _ConnectionError
+        ChunkedEncodingError = _ChunkedEncodingError
+
+    class _Session:
+        def get(self, url, headers=None, timeout=30):
+            req = _urllib_req.Request(url, headers=headers or {})
+            ctx = _ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = _ssl.CERT_NONE
+            try:
+                with _urllib_req.urlopen(req, timeout=timeout, context=ctx) as r:
+                    return _FakeResponse(r.status, r.read().decode('utf-8', errors='replace'))
+            except _urllib_err.URLError as e:
+                raise _ConnectionError(str(e))
+
+    class _RequestsShim:
+        exceptions = _Exceptions()
+        Session = _Session
+
+        def get(self, url, headers=None, timeout=30):
+            return _Session().get(url, headers=headers, timeout=timeout)
+
+    requests = _RequestsShim()
 from datetime import datetime
 import re
 import time

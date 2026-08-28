@@ -9,7 +9,48 @@ No third-party accounts needed — you own the site, you can scrape it freely.
 import os
 import time
 import re
-import requests
+# Use built-in urllib so Vercel bundle-size optimization can never strip it
+try:
+    import requests as _req_lib
+except ImportError:
+    _req_lib = None
+
+if _req_lib is not None:
+    requests = _req_lib
+else:
+    import urllib.request as _urllib_req
+    import urllib.error as _urllib_err
+    import ssl as _ssl
+    import json as _json_mod
+
+    class _FakeResponse:
+        def __init__(self, status, text):
+            self.status_code = status
+            self.text = text
+        def json(self):
+            return _json_mod.loads(self.text)
+
+    class _TimeoutError(Exception): pass
+    class _ConnectionError(Exception): pass
+
+    class _Exceptions:
+        Timeout = _TimeoutError
+        ConnectionError = _ConnectionError
+
+    class _RequestsShim:
+        exceptions = _Exceptions()
+        def get(self, url, headers=None, timeout=10):
+            req = _urllib_req.Request(url, headers=headers or {})
+            ctx = _ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = _ssl.CERT_NONE
+            try:
+                with _urllib_req.urlopen(req, timeout=timeout, context=ctx) as r:
+                    return _FakeResponse(r.status, r.read().decode('utf-8', errors='replace'))
+            except _urllib_err.URLError as e:
+                raise _ConnectionError(str(e))
+
+    requests = _RequestsShim()
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 
@@ -179,10 +220,10 @@ def scan_page(url: str, label: str = "") -> dict:
                 f"truncated at ~155–160 chars in search results"
             )
 
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.ConnectionError, ConnectionRefusedError, OSError):
         result["error"]  = "Connection refused — server may not be running"
         result["issues"].append("Page unreachable — verify Flask server is running on port 5000")
-    except requests.exceptions.Timeout:
+    except (requests.exceptions.Timeout, TimeoutError):
         result["error"]  = "Request timed out after 10s"
         result["issues"].append("Page timed out — critical performance issue")
     except Exception as e:
