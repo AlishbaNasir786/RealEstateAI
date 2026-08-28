@@ -432,6 +432,44 @@ FIELDNAMES = [
 ]
 
 
+def load_fallback_listings(csv_path: str = "data/zameen_listings.csv") -> list:
+    """
+    Load listings from the committed CSV dataset as a fallback when the
+    live Zameen scrape returns no results (e.g. bot-blocking or timeout).
+    """
+    # Try the path as given, then relative to this file's directory
+    candidates = [
+        csv_path,
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), csv_path),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "zameen_listings.csv"),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            listings = []
+            try:
+                with open(path, newline="", encoding="utf-8", errors="replace") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        # Coerce numeric fields back from string
+                        for int_field in ("price_numeric", "beds", "baths",
+                                          "area_sqft", "price_per_sqft",
+                                          "description_length", "photo_count"):
+                            val = row.get(int_field, "")
+                            try:
+                                row[int_field] = int(float(val)) if val and val.strip() else None
+                            except (ValueError, TypeError):
+                                row[int_field] = None
+                        # Coerce bool
+                        row["featured"] = str(row.get("featured", "")).lower() in ("true", "1", "yes")
+                        listings.append(row)
+                print(f"📂  Loaded {len(listings):,} fallback listings from {path}")
+                return listings
+            except Exception as exc:
+                print(f"⚠️  Could not read fallback CSV {path}: {exc}")
+    print("⚠️  No fallback CSV found — returning empty list.")
+    return []
+
+
 def save_to_csv(listings: list, filename: str = "data/zameen_listings.csv"):
     if not listings:
         print("No listings to save.")

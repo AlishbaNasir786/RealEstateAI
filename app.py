@@ -139,6 +139,44 @@ def serve_modules_data(filename):
 def competitor():
     return send_from_directory('.', 'competitor.html')
 
+@app.route('/competitor_report')
+@admin_required
+def competitor_report():
+    """Serve the competitor intelligence report HTML.
+    Checks /tmp/ first (Vercel runtime writes), then falls back to the
+    committed copy in modules/data/, then returns a friendly placeholder.
+    """
+    import mimetypes
+    _this_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join('/tmp', 'competitor_report.html'),
+        os.path.join(_this_dir, 'modules', 'data', 'competitor_report.html'),
+        os.path.join(os.getcwd(), 'modules', 'data', 'competitor_report.html'),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return send_file(os.path.abspath(path), mimetype='text/html')
+
+    placeholder = """<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>No Report Yet</title>
+<style>
+  body{margin:0;background:#090d16;color:#94a3b8;font-family:'Segoe UI',sans-serif;
+       display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+  .box{padding:40px;background:#111827;border:1px solid #1e293b;border-radius:16px;max-width:460px}
+  h2{color:#f1f5f9;margin-bottom:12px;font-size:1.3rem}
+  p{margin:0;font-size:.95rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>&#128202; No Report Generated Yet</h2>
+  <p>Click <strong>Run Real-Time Scrape</strong> or upload an HTML file above to generate your competitor intelligence report.</p>
+</div>
+</body>
+</html>"""
+    return placeholder, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
 @app.route('/marketing_report')
 @admin_required
 def marketing_report():
@@ -178,6 +216,7 @@ def run_engine():
             yield "data: 0% — Scraper starting…\n\n"
 
             output_q = queue.Queue()
+            engine_error = None
 
             def _run_engine_in_thread():
                 """Run competitor engine in-process, capturing print() output."""
@@ -224,11 +263,17 @@ def run_engine():
                     continue
                 if line is None:
                     break
+                # Track errors so we can send [ERROR] at the end
+                if line.startswith('ERROR:'):
+                    engine_error = line
                 yield f"data: {line}\n\n"
 
             if t.is_alive():
                 t.join(timeout=5)
-            yield "data: [DONE]\n\n"
+            if engine_error:
+                yield "data: [ERROR]\n\n"
+            else:
+                yield "data: [DONE]\n\n"
 
         return Response(
             generate(),
