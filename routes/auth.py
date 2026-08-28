@@ -11,7 +11,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from auth_db import (
     create_user, authenticate_user, authenticate_google_user,
-    get_user_by_id, update_user_segment, update_user_phone
+    get_user_by_id, get_user_by_email, update_user_segment, update_user_phone
 )
 from modules.ad_personalization.segments import get_segment, SEGMENTS
 from modules.ad_personalization.ad_generator import generate_ad_campaign
@@ -91,12 +91,20 @@ def google_auth():
 def get_me():
     """Return currently authenticated user state."""
     user_id = session.get("user_id")
-    if not user_id:
+    user_email = session.get("user_email")
+    if not user_id and not user_email:
         return jsonify({"authenticated": False, "user": None})
 
-    user = get_user_by_id(user_id)
+    user = get_user_by_id(user_id) if user_id else None
+    if not user and user_email:
+        user = get_user_by_email(user_email)
+        if user:
+            session["user_id"] = user["id"]
+
     if not user:
         session.pop("user_id", None)
+        session.pop("user_email", None)
+        session.pop("user_name", None)
         return jsonify({"authenticated": False, "user": None})
 
     return jsonify({"authenticated": True, "user": user})
@@ -106,6 +114,9 @@ def get_me():
 def logout():
     """Clear session."""
     session.pop("user_id", None)
+    session.pop("user_email", None)
+    session.pop("user_name", None)
+    session.pop("user_phone", None)
     return jsonify({"status": "success", "message": "Logged out successfully"})
 
 

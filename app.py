@@ -41,16 +41,22 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         user_id = session.get('user_id')
+        user_email = session.get('user_email')
         is_api  = request.path.startswith('/api/')
 
-        if not user_id:
+        if not user_id and not user_email:
             if is_api:
                 return jsonify({'error': 'Authentication required.'}), 401
             return redirect('/?access=denied&reason=login')
 
         # Lazy import to avoid circular
-        from auth_db import get_user_by_id
-        user = get_user_by_id(user_id)
+        from auth_db import get_user_by_id, get_user_by_email
+        user = get_user_by_id(user_id) if user_id else None
+        if not user and user_email:
+            user = get_user_by_email(user_email)
+            if user:
+                session['user_id'] = user['id']
+
         if not user or user.get('role') != 'admin':
             if is_api:
                 return jsonify({'error': 'Admin access required. This feature is not available for your account.'}), 403
@@ -78,6 +84,11 @@ def index():
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
+
+@app.route('/modules/data/<path:filename>')
+def serve_modules_data(filename):
+    data_dir = os.path.join(os.path.dirname(__file__), 'modules', 'data')
+    return send_from_directory(data_dir, filename)
 
 @app.route('/competitor')
 @admin_required

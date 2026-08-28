@@ -11,7 +11,9 @@ __pycache__/
 *.pyd
 
 # Raw scrape files & cache
-modules/data/
+modules/data/*.csv
+modules/data/*.raw.html
+modules/data/*.tmp
 data/*.html
 *.raw.html
 

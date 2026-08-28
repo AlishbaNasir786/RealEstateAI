@@ -227,7 +227,8 @@ def create_user(email: str, password: str = None, full_name: str = "",
     """Create a new user record with hashed password."""
     import uuid
     email = email.lower().strip()
-    user_id = str(uuid.uuid4())
+    # Use deterministic UUIDv5 so the user_id is identical across serverless restarts
+    user_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"realestate_user:{email}"))
     pw_hash = generate_password_hash(password) if password else None
     now = datetime.now().isoformat()
 
