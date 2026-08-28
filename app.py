@@ -3,7 +3,7 @@ import json
 import subprocess
 from functools import wraps
 from werkzeug.utils import secure_filename
-from flask import Flask, jsonify, send_from_directory, Response, request, session, redirect, url_for
+from flask import Flask, jsonify, send_from_directory, send_file, Response, request, session, redirect, url_for
 
 # Load .env variables
 try:
@@ -87,13 +87,52 @@ def serve_static(filename):
 
 @app.route('/modules/data/<path:filename>')
 def serve_modules_data(filename):
-    # On Vercel reports are written to /tmp/ (writable). Check there first.
-    tmp_path = os.path.join('/tmp', filename)
-    if os.path.exists(tmp_path):
-        return send_from_directory('/tmp', filename)
-    # Fall back to the committed static copy in modules/data/
-    data_dir = os.path.join(os.path.dirname(__file__), 'modules', 'data')
-    return send_from_directory(data_dir, filename)
+    import mimetypes
+    # Candidate paths in priority order:
+    # 1. /tmp/ — writable on Vercel, freshly generated after scrape
+    # 2. Absolute path relative to this file — committed static copy
+    # 3. CWD-relative fallback
+    _this_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join('/tmp', filename),
+        os.path.join(_this_dir, 'modules', 'data', filename),
+        os.path.join(os.getcwd(), 'modules', 'data', filename),
+        os.path.join(_this_dir, 'data', filename),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            mime = mimetypes.guess_type(path)[0] or 'text/html'
+            return send_file(os.path.abspath(path), mimetype=mime)
+
+    # No report exists yet — return a helpful placeholder page
+    if filename.endswith('.html'):
+        placeholder = """<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>No Report Yet</title>
+<style>
+  body{margin:0;background:#090d16;color:#94a3b8;font-family:'Segoe UI',sans-serif;
+       display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+  .box{padding:40px;background:#111827;border:1px solid #1e293b;border-radius:16px;max-width:460px}
+  h2{color:#f1f5f9;margin-bottom:12px;font-size:1.3rem}
+  p{margin:0;font-size:.95rem;line-height:1.6}
+  .btn{display:inline-block;margin-top:20px;padding:10px 24px;
+       background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+       border-radius:8px;font-size:.9rem;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>📊 No Report Generated Yet</h2>
+  <p>Click <strong>Run Real-Time Scrape</strong> above to generate your competitor intelligence report.</p>
+  <a class="btn" href="javascript:window.parent.document.getElementById('run-scrape-btn')?.click()">
+    Generate Report
+  </a>
+</div>
+</body>
+</html>"""
+        return placeholder, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+    return "File not found", 404
 
 @app.route('/competitor')
 @admin_required
