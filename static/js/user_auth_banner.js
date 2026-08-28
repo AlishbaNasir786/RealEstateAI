@@ -33,12 +33,15 @@ async function initAuthAndBanner() {
     } else {
       renderUserHeaderBadge(false);
       loadPersonalizedBanner();
-      // Only auto-open login modal on the home/listing page, NOT on admin tool pages
-      // (admin tools use server-side @admin_required which redirects with ?access=denied)
+      // Auto-open login modal only once per browser session.
+      // After the user closes it (without logging in), it won't reappear
+      // until they log out (which resets the flag) or open a new browser session.
       const adminPages = ['/competitor', '/marketing_report', '/chat_assistant',
                           '/brand_memory', '/ad_engine', '/persona'];
       const isAdminPage = adminPages.some(p => window.location.pathname.startsWith(p));
-      if (!isAdminPage) {
+      const alreadyShown = sessionStorage.getItem('auth_modal_shown');
+      if (!isAdminPage && !alreadyShown) {
+        sessionStorage.setItem('auth_modal_shown', '1');
         openAuthModal('login');
       }
     }
@@ -523,6 +526,9 @@ async function _submitGoogleFallback() {
 async function handleLogout() {
   await fetch('/api/auth/logout', { method: 'POST' });
   currentUser = null;
+  // Clear the "modal already shown" flag so the login modal
+  // appears again on the next page visit after logout.
+  sessionStorage.removeItem('auth_modal_shown');
   renderUserHeaderBadge(false);
   loadPersonalizedBanner();
 }
