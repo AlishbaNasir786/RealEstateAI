@@ -162,6 +162,8 @@ def competitor_report():
         os.path.join('/tmp', 'competitor_report.html'),
         os.path.join(_this_dir, 'modules', 'data', 'competitor_report.html'),
         os.path.join(os.getcwd(), 'modules', 'data', 'competitor_report.html'),
+        os.path.join(_this_dir, 'data', 'competitor_report.html'),
+        os.path.join(os.getcwd(), 'data', 'competitor_report.html'),
     ]
     for path in candidates:
         if os.path.isfile(path):
