@@ -94,6 +94,13 @@ def index():
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
+    # Check /tmp fallback first for serverless file uploads
+    tmp_path = os.path.join('/tmp', filename)
+    if os.path.exists(tmp_path):
+        return send_from_directory('/tmp', filename)
+    tmp_img_path = os.path.join('/tmp', 'images', os.path.basename(filename))
+    if os.path.exists(tmp_img_path):
+        return send_from_directory(os.path.join('/tmp', 'images'), os.path.basename(filename))
     return send_from_directory('static', filename)
 
 @app.route('/modules/data/<path:filename>')
@@ -475,12 +482,23 @@ def upload_image():
         existing = [existing]  # migrate old single-string format
     idx = len(existing) + 1
 
+    import base64
     ext      = f.filename.rsplit('.', 1)[1].lower()
-    filename = secure_filename(f'property_{property_id}_{idx}.{ext}')
-    filepath = os.path.join(IMAGES_DIR, filename)
-    f.save(filepath)
+    mime     = 'image/jpeg' if ext in ('jpg', 'jpeg') else f'image/{ext}'
+    file_bytes = f.read()
+    b64_data = base64.b64encode(file_bytes).decode('utf-8')
+    data_uri = f"data:{mime};base64,{b64_data}"
 
-    url = f'/static/images/{filename}'
+    filename = secure_filename(f'property_{property_id}_{idx}.{ext}')
+    try:
+        os.makedirs(IMAGES_DIR, exist_ok=True)
+        filepath = os.path.join(IMAGES_DIR, filename)
+        with open(filepath, 'wb') as out_f:
+            out_f.write(file_bytes)
+    except Exception:
+        pass
+
+    url = data_uri
     existing.append(url)
     m[property_id] = existing
     _save_map(m)

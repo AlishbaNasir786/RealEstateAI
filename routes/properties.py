@@ -356,26 +356,36 @@ def add_property():
     if not data['title']:
         return jsonify({'error': 'Property title is required.'}), 400
 
-    # Handle up to 5 image uploads
+    # Handle up to 5 image uploads with Base64 Data URI encoding (guarantees images render without static-file 404s)
+    import base64
     uploaded_images = []
     for i in range(1, 6):
         file = request.files.get(f'image_{i}')
         if file and file.filename and _allowed_file(file.filename):
             ext = file.filename.rsplit('.', 1)[1].lower()
-            filename = f"property_{data['id']}_{i}.{ext}"
+            mime = 'image/jpeg' if ext in ('jpg', 'jpeg') else f'image/{ext}'
             try:
-                os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                file.save(os.path.join(UPLOAD_FOLDER, filename))
-                uploaded_images.append(f'/static/images/{filename}')
+                file_bytes = file.read()
+                if file_bytes:
+                    b64_data = base64.b64encode(file_bytes).decode('utf-8')
+                    data_uri = f"data:{mime};base64,{b64_data}"
+                    uploaded_images.append(data_uri)
+                    # Also write to UPLOAD_FOLDER as backup
+                    try:
+                        filename = f"property_{data['id']}_{i}.{ext}"
+                        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+                        with open(os.path.join(UPLOAD_FOLDER, filename), 'wb') as f:
+                            f.write(file_bytes)
+                    except Exception:
+                        pass
             except Exception as img_err:
-                print(f"Warning saving uploaded image: {img_err}")
+                print(f"Warning processing uploaded image: {img_err}")
 
     data['image_url'] = uploaded_images[0] if uploaded_images else None
     data['gallery'] = json.dumps(uploaded_images)
 
     # Always persist locally — guarantees it shows in listings immediately
     _save_local_property(data)
-    _invalidate_cache()  # force next request to rebuild fresh inventory
 
     # Also push to Supabase if available
     if supabase is not None:

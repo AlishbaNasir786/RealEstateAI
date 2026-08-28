@@ -863,7 +863,8 @@ function slideImage(propId, imgList, direction) {
   if (!img) return;
   let idx = parseInt(img.dataset.idx || '0', 10);
   idx = (idx + direction + imgList.length) % imgList.length;
-  img.src = imgList[idx] + '?cache=' + idx;
+  const rawSrc = imgList[idx] || DEFAULT_IMG;
+  img.src = rawSrc.startsWith('data:') ? rawSrc : (rawSrc + '?cache=' + idx);
   img.dataset.idx = String(idx);
   _updateSliderUI(propId, imgList.length, idx);
 }
@@ -873,7 +874,8 @@ function jumpSlide(propId, imgList, idx) {
   if (!wrap) return;
   const img = wrap.querySelector('img');
   if (!img) return;
-  img.src = imgList[idx] + '?cache=' + idx;
+  const rawSrc = imgList[idx] || DEFAULT_IMG;
+  img.src = rawSrc.startsWith('data:') ? rawSrc : (rawSrc + '?cache=' + idx);
   img.dataset.idx = String(idx);
   _updateSliderUI(propId, imgList.length, idx);
 }
