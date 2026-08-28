@@ -2,7 +2,49 @@ import os
 import re
 import json
 import threading
-import requests as http_requests
+# Use built-in urllib so Vercel bundle-size stripping can never break this
+try:
+    import requests as http_requests
+except ImportError:
+    import urllib.request as _urllib_req
+    import urllib.error as _urllib_err
+    import ssl as _ssl
+    import json as _json_mod
+
+    class _FakeResp:
+        def __init__(self, status, data):
+            self.status_code = status
+            self.text = data.decode('utf-8', errors='replace')
+            self.content = data
+        def json(self):
+            return _json_mod.loads(self.text)
+
+    class _HttpShim:
+        def _request(self, method, url, json=None, headers=None, timeout=20, params=None):
+            if params:
+                from urllib.parse import urlencode
+                url = url + '?' + urlencode(params)
+            body = _json_mod.dumps(json).encode() if json else None
+            hdrs = {'Content-Type': 'application/json', **(headers or {})}
+            req = _urllib_req.Request(url, data=body, headers=hdrs, method=method)
+            ctx = _ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = _ssl.CERT_NONE
+            try:
+                with _urllib_req.urlopen(req, timeout=timeout, context=ctx) as r:
+                    return _FakeResp(r.status, r.read())
+            except _urllib_err.HTTPError as e:
+                return _FakeResp(e.code, e.read())
+            except Exception as e:
+                raise RuntimeError(str(e))
+
+        def post(self, url, json=None, headers=None, timeout=20, **kw):
+            return self._request('POST', url, json=json, headers=headers, timeout=timeout)
+
+        def get(self, url, headers=None, timeout=20, params=None, **kw):
+            return self._request('GET', url, headers=headers, timeout=timeout, params=params)
+
+    http_requests = _HttpShim()
 from flask import Blueprint, request, jsonify, session
 from modules.persona_engine import generate_whatsapp_post
 from routes.properties import get_home_inventory

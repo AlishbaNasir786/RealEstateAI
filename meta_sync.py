@@ -1,5 +1,36 @@
 import os
-import requests
+# Use built-in urllib so Vercel bundle-size stripping can never break this
+try:
+    import requests
+except ImportError:
+    import urllib.request as _urllib_req
+    import urllib.error as _urllib_err
+    import ssl as _ssl
+    import json as _json_mod
+
+    class _FakeResp:
+        def __init__(self, status, data):
+            self.status_code = status
+            self.text = data.decode('utf-8', errors='replace')
+        def json(self):
+            return _json_mod.loads(self.text)
+
+    class _ReqShim:
+        def get(self, url, params=None, timeout=15):
+            if params:
+                from urllib.parse import urlencode
+                url = url + '?' + urlencode(params)
+            req = _urllib_req.Request(url)
+            ctx = _ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = _ssl.CERT_NONE
+            try:
+                with _urllib_req.urlopen(req, timeout=timeout, context=ctx) as r:
+                    return _FakeResp(r.status, r.read())
+            except _urllib_err.HTTPError as e:
+                return _FakeResp(e.code, e.read())
+
+    requests = _ReqShim()
 import json
 from dotenv import load_dotenv
 from db import supabase
